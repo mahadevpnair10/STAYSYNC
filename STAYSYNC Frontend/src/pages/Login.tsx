@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { supabase } from "@/../supabaseClient";
+
 
 const Login = () => {
   const { toast } = useToast();
@@ -14,22 +16,29 @@ const Login = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const res = await fetch('http://localhost:5000/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      const data = await res.json();
-      if (res.ok) {
-        toast({ title: 'Login successful', description: `Welcome, ${data.user.name}` });
-        localStorage.setItem('staysync_user', JSON.stringify(data.user));
-  window.location.href = '/';
-      } else {
-        toast({ title: 'Login failed', description: data.error || 'Unknown error' });
-      }
-    } catch (err) {
-      toast({ title: 'Login failed', description: 'Network error' });
+
+      if (error) throw error;
+
+      // Store session in localStorage (optional, supabase does this automatically)
+      localStorage.setItem("staysync_user", JSON.stringify(data.user));
+
+      toast({
+        title: "Login successful",
+        description: `Welcome, ${data.user?.user_metadata?.full_name || "User"}`,
+      });
+
+      window.location.href = "/";
+    } catch (err: any) {
+      toast({
+        title: "Login failed",
+        description: err.message || "Unknown error",
+      });
     }
   };
 
