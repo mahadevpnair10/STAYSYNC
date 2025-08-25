@@ -8,7 +8,6 @@ import { Link } from "react-router-dom";
 import { useState } from "react";
 import { supabase } from "@/../supabaseClient";
 
-
 const Login = () => {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
@@ -18,6 +17,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
+      // Step 1: Sign in with Supabase
       const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password,
@@ -25,19 +25,40 @@ const Login = () => {
 
       if (error) throw error;
 
-      // Store session in localStorage (optional, supabase does this automatically)
-      localStorage.setItem("staysync_user", JSON.stringify(data.user));
+      const user = data.user;
+      if (!user) throw new Error("User not found after login.");
 
+      // Step 2: Fetch role from profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id) // assuming `profiles.id` = `auth.users.id`
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Step 3: Store user + role in localStorage
+      localStorage.setItem(
+        "staysync_user",
+        JSON.stringify({
+          ...user,
+          role: profile?.role || "user", // fallback role
+        })
+      );
+
+      // Step 4: Show success toast
       toast({
         title: "Login successful",
-        description: `Welcome, ${data.user?.user_metadata?.full_name || "User"}`,
+        description: `Welcome, ${user.email} (${profile?.role || "user"})`,
       });
 
+      // Step 5: Redirect
       window.location.href = "/";
     } catch (err: any) {
       toast({
         title: "Login failed",
         description: err.message || "Unknown error",
+        variant: "destructive",
       });
     }
   };
@@ -83,7 +104,8 @@ const Login = () => {
           </form>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            New to STAYSYNC? <Link to="/register" className="story-link">Create an account</Link>
+            New to STAYSYNC?{" "}
+            <Link to="/register" className="story-link">Create an account</Link>
           </p>
         </CardContent>
       </Card>

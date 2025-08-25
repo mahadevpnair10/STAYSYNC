@@ -1,73 +1,58 @@
-import { Link, NavLink, useNavigate } from "react-router-dom";
-import { BedDouble, ConciergeBell } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { User } from "lucide-react"; // profile icon
 import { useEffect, useState } from "react";
+import { supabase } from "@/../supabaseClient";
+import { Button } from "@/components/ui/button";
 
 const SiteHeader = () => {
-  const [user, setUser] = useState(null);
-  const navigate = useNavigate();
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const stored = localStorage.getItem('staysync_user');
-    if (stored) {
-      setUser(JSON.parse(stored));
-    } else {
-      setUser(null);
-    }
+    // Fetch current session on mount
+    const getSession = async () => {
+      const { data } = await supabase.auth.getSession();
+      setUser(data.session?.user ?? null);
+    };
+    getSession();
+
+    // Listen for login/logout
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => {
+      listener.subscription.unsubscribe();
+    };
   }, []);
 
-  function handleLogout() {
-    localStorage.removeItem('staysync_user');
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
     setUser(null);
-    navigate('/login');
-  }
+    window.location.href = "/login";
+  };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b bg-background/80 backdrop-blur">
-      <nav className="container mx-auto flex h-16 items-center justify-between">
-        <Link to="/" className="flex items-center gap-2 font-semibold">
-          <BedDouble className="h-5 w-5 text-accent" aria-hidden="true" />
-          <span>STAYSYNC</span>
-        </Link>
-        <div className="flex items-center gap-2">
-          <NavLink to="/user">
-            {({ isActive }) => (
-              <Button variant={isActive ? "default" : "outline"} size="sm">
-                <ConciergeBell className="mr-2 h-4 w-4" /> User Portal
-              </Button>
-            )}
-          </NavLink>
-          <NavLink to="/admin">
-            {({ isActive }) => (
-              <Button variant={isActive ? "default" : "outline"} size="sm">
-                Admin Portal
-              </Button>
-            )}
-          </NavLink>
-          {!user && (
-            <>
-              <NavLink to="/login">
-                {({ isActive }) => (
-                  <Button variant={isActive ? "default" : "ghost"} size="sm">
-                    Login
-                  </Button>
-                )}
-              </NavLink>
-              <NavLink to="/register">
-                {({ isActive }) => (
-                  <Button variant={isActive ? "default" : "secondary"} size="sm">
-                    Register
-                  </Button>
-                )}
-              </NavLink>
-            </>
-          )}
-          {user && (
-            <Button variant="destructive" size="sm" onClick={handleLogout}>
-              Logout
-            </Button>
-          )}
-        </div>
+    <header className="flex items-center justify-between p-4 shadow-md bg-white">
+      <Link to="/" className="text-2xl font-bold text-blue-600">
+        StaySync
+      </Link>
+
+      <nav className="flex items-center gap-4">
+        {user ? (
+          <>
+            {/* Profile icon */}
+            <Link to="/profile" className="p-2 rounded-full hover:bg-gray-100">
+              <User size={22} />
+            </Link>
+
+            <Button onClick={handleLogout}>Logout</Button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className="hover:text-blue-500">Login</Link>
+            <Link to="/register" className="hover:text-blue-500">Register</Link>
+          </>
+        )}
       </nav>
     </header>
   );
