@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { supabase } from "@/../supabaseClient";
 
 const Login = () => {
   const { toast } = useToast();
@@ -14,22 +15,51 @@ const Login = () => {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     try {
-      const res = await fetch('http://localhost:5000/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password })
+      // Step 1: Sign in with Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
-      const data = await res.json();
-      if (res.ok) {
-        toast({ title: 'Login successful', description: `Welcome, ${data.user.name}` });
-        localStorage.setItem('staysync_user', JSON.stringify(data.user));
-  window.location.href = '/';
-      } else {
-        toast({ title: 'Login failed', description: data.error || 'Unknown error' });
-      }
-    } catch (err) {
-      toast({ title: 'Login failed', description: 'Network error' });
+
+      if (error) throw error;
+
+      const user = data.user;
+      if (!user) throw new Error("User not found after login.");
+
+      // Step 2: Fetch role from profiles table
+      const { data: profile, error: profileError } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.id) // assuming `profiles.id` = `auth.users.id`
+        .single();
+
+      if (profileError) throw profileError;
+
+      // Step 3: Store user + role in localStorage
+      localStorage.setItem(
+        "staysync_user",
+        JSON.stringify({
+          ...user,
+          role: profile?.role || "user", // fallback role
+        })
+      );
+
+      // Step 4: Show success toast
+      toast({
+        title: "Login successful",
+        description: `Welcome, ${user.email} (${profile?.role || "user"})`,
+      });
+
+      // Step 5: Redirect
+      window.location.href = "/";
+    } catch (err: any) {
+      toast({
+        title: "Login failed",
+        description: err.message || "Unknown error",
+        variant: "destructive",
+      });
     }
   };
 
@@ -74,7 +104,8 @@ const Login = () => {
           </form>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            New to STAYSYNC? <Link to="/register" className="story-link">Create an account</Link>
+            New to STAYSYNC?{" "}
+            <Link to="/register" className="story-link">Create an account</Link>
           </p>
         </CardContent>
       </Card>

@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "react-router-dom";
 import { useState } from "react";
+import { supabase } from "@/../supabaseClient";
 
 const Register = () => {
   const { toast } = useToast();
@@ -20,23 +21,35 @@ const Register = () => {
       toast({ title: "Passwords do not match" });
       return;
     }
+
     try {
-      const res = await fetch('http://localhost:5000/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, email, password })
+      // 1. Create auth account
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: { full_name: name }, // stored in user_metadata
+        },
       });
-      const data = await res.json();
-      if (res.ok) {
-        toast({ title: 'Registration successful', description: data.message });
-        setTimeout(() => {
-          window.location.href = '/login';
-        }, 1000);
-      } else {
-        toast({ title: 'Registration failed', description: data.error || 'Unknown error' });
-      }
-    } catch (err) {
-      toast({ title: 'Registration failed', description: 'Network error' });
+
+      if (error) throw error;
+
+      // 2. (Optional) Insert into "profiles" table if you have one
+      // await supabase.from("profiles").insert({ id: data.user?.id, full_name: name });
+
+      toast({
+        title: "Registration successful",
+        description: "Check your email for confirmation.",
+      });
+
+      setTimeout(() => {
+        window.location.href = "/login";
+      }, 1000);
+    } catch (err: any) {
+      toast({
+        title: "Registration failed",
+        description: err.message || "Unknown error",
+      });
     }
   };
 
