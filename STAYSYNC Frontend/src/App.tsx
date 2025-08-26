@@ -16,11 +16,8 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCanceled from "./pages/PaymentCanceled";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-<<<<<<< HEAD
 import HotelForecast from "./pages/HotelForecast";
-=======
-import ProfilePage from "./pages/ProfilePage"; // NEW
->>>>>>> origin/main
+import ProfilePage from "./pages/ProfilePage"; 
 
 const queryClient = new QueryClient();
 
@@ -42,13 +39,10 @@ const App = () => (
               <Route path="/profile" element={<ProfilePage />} /> {/* NEW */}
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/payment-canceled" element={<PaymentCanceled />} />
-<<<<<<< HEAD
                <Route path="/forecast" element={<HotelForecast />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-=======
 
               {/* Catch-all */}
->>>>>>> origin/main
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />
