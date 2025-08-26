@@ -1,3 +1,4 @@
+// ProfilePage.tsx (debug-enhanced + fixed)
 import { useEffect, useState } from "react";
 import { supabase } from "@/../supabaseClient";
 import { Loader2 } from "lucide-react";
@@ -22,118 +23,207 @@ const ProfilePage = () => {
   const [otpSent, setOtpSent] = useState(false);
   const [uploading, setUploading] = useState(false);
 
-  // Fetch Profile
+  // Fetch Profile (debugging)
   useEffect(() => {
-    const getProfile = async () => {
-      setLoading(true);
-      const { data: { user } } = await supabase.auth.getUser();
+    let mounted = true;
 
-      if (user) {
-        const { data, error } = await supabase
+    const getProfile = async () => {
+      console.group("Profile Debug: getProfile start");
+      setLoading(true);
+
+      try {
+        const { data: authData, error: authError } = await supabase.auth.getUser();
+        if (authError) {
+          console.error("Profile Debug: auth.getUser error:", authError);
+        }
+
+        const user = authData?.user;
+        console.log("Profile Debug: auth user:", user ?? null);
+
+        if (!user) {
+          console.warn("Profile Debug: No authenticated user found.");
+          if (mounted) setProfile(null);
+          return;
+        }
+
+        // Fetch profile row
+        const { data, error: selectError } = await supabase
           .from("profiles")
           .select("id, email, role, phone, profile_image_url")
           .eq("id", user.id)
           .single();
 
-        if (error) {
-          console.error(error);
+        if (selectError) {
+          console.error("Profile Debug: profiles.select error:", selectError);
+          if (mounted) setProfile(null);
         } else {
-          setProfile(data);
-          setPhone(data?.phone || "");
+          console.log("Profile Debug: fetched profile:", data);
+          if (mounted) {
+            setProfile(data);
+            setPhone(data?.phone || "");
+          }
         }
+      } catch (err) {
+        console.error("Profile Debug: unexpected error in getProfile:", err);
+      } finally {
+        if (mounted) setLoading(false);
+        console.groupEnd();
       }
-      setLoading(false);
     };
 
     getProfile();
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  // Send OTP for phone verification
+  // Send OTP
   const sendOtp = async () => {
-    if (!phone) {
-      toast({ title: "Phone required", description: "Please enter a phone number." });
-      return;
-    }
-
-    const { error } = await supabase.auth.signInWithOtp({ phone });
-    if (error) {
-      toast({ title: "Failed", description: error.message, variant: "destructive" });
-    } else {
-      toast({ title: "OTP Sent", description: "Check your SMS for the code." });
-      setOtpSent(true);
+    console.group("Profile Debug: sendOtp");
+    try {
+      if (!phone) {
+        toast({ title: "Phone required", description: "Please enter a phone number." });
+        console.warn("Profile Debug: sendOtp called without phone");
+        return;
+      }
+      const { error } = await supabase.auth.signInWithOtp({ phone });
+      console.log("Profile Debug: signInWithOtp result error:", error);
+      if (error) {
+        toast({ title: "Failed", description: error.message, variant: "destructive" });
+      } else {
+        toast({ title: "OTP Sent", description: "Check your SMS for the code." });
+        setOtpSent(true);
+      }
+    } catch (err) {
+      console.error("Profile Debug: sendOtp unexpected error:", err);
+      toast({ title: "Failed", description: "Unexpected error (see console)", variant: "destructive" });
+    } finally {
+      console.groupEnd();
     }
   };
 
   // Verify OTP and update phone in profile
   const verifyOtp = async () => {
-    if (!otp || !phone) return;
-
-    const { data, error } = await supabase.auth.verifyOtp({
-      phone,
-      token: otp,
-      type: "sms",
-    });
-
-    if (error) {
-      toast({ title: "Verification failed", description: error.message, variant: "destructive" });
-      return;
-    }
-
-    // Update profile table
-    if (profile) {
-      const { error: updateError } = await supabase
-        .from("profiles")
-        .update({ phone })
-        .eq("id", profile.id);
-
-      if (updateError) {
-        toast({ title: "Update failed", description: updateError.message, variant: "destructive" });
-      } else {
-        toast({ title: "Phone Verified", description: "Phone number updated successfully." });
-        setOtpSent(false);
-        setOtp("");
+    console.group("Profile Debug: verifyOtp");
+    try {
+      if (!otp || !phone) {
+        console.warn("Profile Debug: verifyOtp missing otp or phone");
+        return;
       }
+
+      const { data: verifyData, error: verifyError } = await supabase.auth.verifyOtp({
+        phone,
+        token: otp,
+        type: "sms",
+      });
+
+      console.log("Profile Debug: verifyOtp response:", { verifyData, verifyError });
+      if (verifyError) {
+        toast({ title: "Verification failed", description: verifyError.message, variant: "destructive" });
+        return;
+      }
+
+      if (profile) {
+        const { data: updateData, error: updateError } = await supabase
+          .from("profiles")
+          .update({ phone })
+          .eq("id", profile.id);
+
+        console.log("Profile Debug: profiles.update result:", { updateData, updateError });
+
+        if (updateError) {
+          toast({ title: "Update failed", description: updateError.message, variant: "destructive" });
+        } else {
+          toast({ title: "Phone Verified", description: "Phone number updated successfully." });
+          setOtpSent(false);
+          setOtp("");
+        }
+      } else {
+        console.warn("Profile Debug: No profile available to update phone");
+      }
+    } catch (err) {
+      console.error("Profile Debug: verifyOtp unexpected error:", err);
+      toast({ title: "Failed", description: "Unexpected error (see console)", variant: "destructive" });
+    } finally {
+      console.groupEnd();
     }
   };
 
   // Upload profile picture
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.group("Profile Debug: handleFileUpload start");
     try {
-      if (!e.target.files || e.target.files.length === 0) return;
-      setUploading(true);
+      if (!e.target.files || e.target.files.length === 0) {
+        console.log("Profile Debug: No file selected");
+        return;
+      }
+
       const file = e.target.files[0];
+      if (!file) return;
+
+      setUploading(true);
       const fileExt = file.name.split(".").pop();
-      const fileName = `${profile?.id}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `${profile?.id ?? "unknown_user"}.${fileExt}`;
+      const filePath = fileName;
+
+      console.log("Profile Debug: selected file:", {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        fileName,
+        filePath,
+      });
 
       // Upload to bucket
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from("profile-pictures")
         .upload(filePath, file, { upsert: true });
 
-      if (uploadError) throw uploadError;
+      console.log("Profile Debug: storage.upload response:", { uploadData, uploadError });
 
-      // Get public URL
-      const { data } = supabase.storage
+      if (uploadError) {
+        console.error("Profile Debug: uploadError object:", uploadError);
+        throw uploadError;
+      }
+
+      // Get public URL (fixed destructuring)
+      const { data: publicUrlData } = supabase.storage
         .from("profile-pictures")
         .getPublicUrl(filePath);
 
+      const publicUrl = publicUrlData?.publicUrl;
+      console.log("Profile Debug: resolved publicUrl:", publicUrl);
+
+      if (!publicUrl) {
+        throw new Error("Could not resolve public URL");
+      }
+
       // Save URL to profile
       if (profile) {
-        const { error: updateError } = await supabase
+        const { data: updateData, error: updateError } = await supabase
           .from("profiles")
-          .update({ profile_image_url: data.publicUrl })
+          .update({ profile_image_url: publicUrl })
           .eq("id", profile.id);
 
-        if (updateError) throw updateError;
+        console.log("Profile Debug: profiles.update response:", { updateData, updateError });
 
-        setProfile({ ...profile, profile_image_url: data.publicUrl });
+        if (updateError) {
+          console.error("Profile Debug: updateError object:", updateError);
+          throw updateError;
+        }
+
+        setProfile({ ...profile, profile_image_url: publicUrl });
         toast({ title: "Profile picture updated" });
+      } else {
+        console.warn("Profile Debug: profile is null, skipping profiles.update");
+        toast({ title: "Upload succeeded but profile missing", description: "Check logs", variant: "destructive" });
       }
     } catch (err: any) {
-      toast({ title: "Upload failed", description: err.message, variant: "destructive" });
+      console.error("Profile Debug: File upload error details:", err);
+      toast({ title: "Upload failed", description: err?.message ?? String(err), variant: "destructive" });
     } finally {
       setUploading(false);
+      console.groupEnd();
     }
   };
 
@@ -152,7 +242,7 @@ const ProfilePage = () => {
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow rounded-lg space-y-4">
       <h1 className="text-2xl font-bold mb-4">My Profile</h1>
-      
+
       {/* Profile picture */}
       {profile.profile_image_url ? (
         <img
