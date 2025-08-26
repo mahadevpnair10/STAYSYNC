@@ -14,6 +14,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [role, setRole] = useState<"user" | "admin">("user"); // default customer = user
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,38 +25,41 @@ const Register = () => {
 
     try {
       // 1. Create auth account
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email,
         password,
         options: {
-          data: { full_name: name }, // stored in user_metadata
+          data: { name, role }, // store metadata temporarily
         },
       });
 
       if (error) throw error;
 
-      // 2. (Optional) Insert into "profiles" table if you have one
-      // await supabase.from("profiles").insert({ id: data.user?.id, full_name: name });
-
+      // 2. Tell user to confirm email
       toast({
         title: "Registration successful",
-        description: "Check your email for confirmation.",
+        description: "Check your email for confirmation before logging in.",
       });
 
       setTimeout(() => {
         window.location.href = "/login";
-      }, 1000);
+      }, 1500);
     } catch (err: any) {
       toast({
         title: "Registration failed",
         description: err.message || "Unknown error",
+        variant: "destructive",
       });
     }
   };
 
   return (
     <main className="container mx-auto max-w-md py-10">
-      <SEO title="Register | STAYSYNC" description="Create your STAYSYNC account." canonical="/register" />
+      <SEO
+        title="Register | STAYSYNC"
+        description="Create your STAYSYNC account."
+        canonical="/register"
+      />
       <h1 className="sr-only">Register on STAYSYNC</h1>
 
       <Card className="animate-enter">
@@ -67,26 +71,85 @@ const Register = () => {
           <form onSubmit={onSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Full name</Label>
-              <Input id="name" placeholder="Jane Doe" value={name} onChange={(e) => setName(e.target.value)} required />
+              <Input
+                id="name"
+                placeholder="Jane Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input id="email" type="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} required />
+              <Input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={(e) => setPassword(e.target.value)} required />
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
             </div>
             <div className="space-y-2">
               <Label htmlFor="confirm">Confirm password</Label>
-              <Input id="confirm" type="password" placeholder="••••••••" value={confirm} onChange={(e) => setConfirm(e.target.value)} required />
+              <Input
+                id="confirm"
+                type="password"
+                placeholder="••••••••"
+                value={confirm}
+                onChange={(e) => setConfirm(e.target.value)}
+                required
+              />
             </div>
 
-            <Button type="submit" className="w-full">Create account</Button>
+            {/* Role Selection */}
+            <div className="space-y-2">
+              <Label>Account Type</Label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="user"
+                    checked={role === "user"}
+                    onChange={() => setRole("user")}
+                  />
+                  Customer (User)
+                </label>
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    name="role"
+                    value="admin"
+                    checked={role === "admin"}
+                    onChange={() => setRole("admin")}
+                  />
+                  Admin
+                </label>
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full">
+              Create account
+            </Button>
           </form>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
-            Already have an account? <Link to="/login" className="story-link">Sign in</Link>
+            Already have an account?{" "}
+            <Link to="/login" className="story-link">
+              Sign in
+            </Link>
           </p>
         </CardContent>
       </Card>

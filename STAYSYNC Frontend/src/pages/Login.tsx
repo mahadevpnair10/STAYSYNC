@@ -28,31 +28,47 @@ const Login = () => {
       const user = data.user;
       if (!user) throw new Error("User not found after login.");
 
-      // Step 2: Fetch role from profiles table
+      // Step 2: Fetch profile
       const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .select("role")
-        .eq("id", user.id) // assuming `profiles.id` = `auth.users.id`
+        .select("*")
+        .eq("id", user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError && profileError.code !== "PGRST116") {
+        throw profileError;
+      }
 
-      // Step 3: Store user + role in localStorage
+      // Step 3: If no profile, create one
+      if (!profile) {
+        const { error: insertError } = await supabase.from("profiles").insert([
+          {
+            id: user.id,
+            email: user.email,
+            name: user.user_metadata?.name || "",
+            role: user.user_metadata?.role || "user",
+          },
+        ]);
+        if (insertError) throw insertError;
+      }
+
+      const finalRole = profile?.role || user.user_metadata?.role || "user";
+
+      // Step 4: Store in localStorage
       localStorage.setItem(
         "staysync_user",
         JSON.stringify({
           ...user,
-          role: profile?.role || "user", // fallback role
+          role: finalRole,
         })
       );
 
-      // Step 4: Show success toast
+      // Step 5: Toast + Redirect
       toast({
         title: "Login successful",
-        description: `Welcome, ${user.email} (${profile?.role || "user"})`,
+        description: `Welcome, ${user.email} (${finalRole})`,
       });
 
-      // Step 5: Redirect
       window.location.href = "/";
     } catch (err: any) {
       toast({
