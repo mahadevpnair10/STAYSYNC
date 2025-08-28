@@ -12,9 +12,11 @@ const Login = () => {
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsLoading(true);
 
     try {
       // Step 1: Sign in with Supabase
@@ -26,57 +28,78 @@ const Login = () => {
       if (error) throw error;
 
       const user = data.user;
-      if (!user) throw new Error("User not found after login.");
+      if (!user) {
+        throw new Error("User not found after login.");
+      }
 
-      // Step 2: Upsert profile (insert if new, update if exists)
-      const { data: profile, error: upsertError } = await supabase
+      // Check if email is confirmed
+      if (!user.email_confirmed_at) {
+        throw new Error("Please confirm your email address before logging in. Check your inbox for the confirmation link.");
+      }
+
+      // Step 2: Fetch profile (should exist due to trigger)
+      const { data: profile, error: profileError } = await supabase
         .from("profiles")
-        .upsert(
-          [
-            {
-              id: user.id,
-              email: user.email,
-              name: user.user_metadata?.name || "",
-              role: user.user_metadata?.role || "user",
-            },
-          ],
-          { onConflict: "id" } // ensures no duplicate primary key errors
-        )
-        .select()
+        .select("*")
+        .eq("id", user.id)
         .single();
 
-      if (upsertError) throw upsertError;
+      let userRole = "user";
+      
+      if (profileError) {
+        // If profile doesn't exist yet, fallback to user metadata
+        console.warn("Profile not found, using fallback:", profileError);
+        userRole = user.user_metadata?.role || "user";
+        
+        // Optionally, you could create the profile here as a fallback
+        // But the trigger should handle this automatically
+      } else {
+        userRole = profile.role || "user";
+      }
 
-      const finalRole = profile?.role || user.user_metadata?.role || "user";
+      // Step 3: Store user data in localStorage
+      const userData = {
+        id: user.id,
+        email: user.email,
+        role: userRole,
+        name: profile?.name || user.user_metadata?.name || "",
+        phone: profile?.phone || user.user_metadata?.phone || null,
+        profile_image_url: profile?.profile_image_url || null,
+      };
 
-      // Step 3: Store in localStorage
-      localStorage.setItem(
-        "staysync_user",
-        JSON.stringify({
-          ...user,
-          role: finalRole,
-        })
-      );
+      localStorage.setItem("staysync_user", JSON.stringify(userData));
 
-      // Step 4: Toast + Redirect
+      // Step 4: Success message and redirect
       toast({
         title: "Login successful",
-        description: `Welcome, ${user.email} (${finalRole})`,
+        description: `Welcome back, ${userData.name || userData.email}!`,
       });
 
-      window.location.href = "/";
+      // Redirect based on role
+      const redirectPath = userRole === "admin" ? "/admin" : "/dashboard";
+      setTimeout(() => {
+        window.location.href = redirectPath;
+      }, 1000);
+
     } catch (err: any) {
+      console.error("Login error:", err);
       toast({
         title: "Login failed",
-        description: err.message || "Unknown error",
+        description: err.message || "Invalid email or password. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <main className="container mx-auto max-w-md py-10">
-      <SEO title="Login | STAYSYNC" description="Access your STAYSYNC account." canonical="/login" />
+      <SEO 
+        title="Login | STAYSYNC" 
+        description="Access your STAYSYNC account." 
+        canonical="/login" 
+      />
       <h1 className="sr-only">Login to STAYSYNC</h1>
 
       <Card className="animate-enter">
@@ -95,9 +118,11 @@ const Login = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
+                disabled={isLoading}
                 autoComplete="email"
               />
             </div>
+            
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
               <Input
@@ -107,16 +132,30 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
+                disabled={isLoading}
                 autoComplete="current-password"
               />
             </div>
 
-            <Button type="submit" className="w-full">Sign in</Button>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "Signing in..." : "Sign in"}
+            </Button>
           </form>
+
+          <div className="mt-4 text-center">
+            <Link 
+              to="/forgot-password" 
+              className="text-sm text-muted-foreground hover:text-primary"
+            >
+              Forgot your password?
+            </Link>
+          </div>
 
           <p className="mt-4 text-center text-sm text-muted-foreground">
             New to STAYSYNC?{" "}
-            <Link to="/register" className="story-link">Create an account</Link>
+            <Link to="/register" className="story-link">
+              Create an account
+            </Link>
           </p>
         </CardContent>
       </Card>
