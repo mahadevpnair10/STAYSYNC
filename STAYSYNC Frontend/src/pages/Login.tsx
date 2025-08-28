@@ -76,7 +76,7 @@ const Login = () => {
       });
 
       // Redirect based on role
-      const redirectPath = userRole === "admin" ? "/admin" : "/dashboard";
+      const redirectPath = userRole === "admin" ? "/" : "/";
       setTimeout(() => {
         window.location.href = redirectPath;
       }, 1000);

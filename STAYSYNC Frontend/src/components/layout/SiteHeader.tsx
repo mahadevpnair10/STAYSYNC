@@ -27,6 +27,7 @@ const SiteHeader = () => {
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
+    localStorage.removeItem("staysync_user"); // <-- Add this line
     setUser(null);
     window.location.href = "/login";
   };
