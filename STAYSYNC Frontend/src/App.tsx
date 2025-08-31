@@ -16,7 +16,8 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCanceled from "./pages/PaymentCanceled";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import ProfilePage from "./pages/ProfilePage"; // NEW
+import ProfilePage from "./pages/ProfilePage";
+import HotelPage from "@/pages/HotelPage";
 
 const queryClient = new QueryClient();
 
@@ -38,6 +39,7 @@ const App = () => (
               <Route path="/profile" element={<ProfilePage />} /> {/* NEW */}
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/payment-canceled" element={<PaymentCanceled />} />
+              <Route path="/hotels/:id" element={<HotelPage />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
