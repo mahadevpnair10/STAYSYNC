@@ -1,8 +1,9 @@
+import React from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 import { HotelProvider } from "@/contexts/HotelContext";
 
@@ -16,11 +17,14 @@ import PaymentSuccess from "./pages/PaymentSuccess";
 import PaymentCanceled from "./pages/PaymentCanceled";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import ProfilePage from "./pages/ProfilePage"; // NEW
+import ProfilePage from "./pages/ProfilePage";
+import HotelPage from "@/pages/HotelPage";
+
+import ChatWidget from "@/components/ChatWidget";
 
 const queryClient = new QueryClient();
 
-const App = () => (
+const App: React.FC = () => (
   <QueryClientProvider client={queryClient}>
     <HelmetProvider>
       <TooltipProvider>
@@ -35,14 +39,18 @@ const App = () => (
               <Route path="/register" element={<Register />} />
               <Route path="/user" element={<UserPortal />} />
               <Route path="/admin" element={<AdminPortal />} />
-              <Route path="/profile" element={<ProfilePage />} /> {/* NEW */}
+              <Route path="/profile" element={<ProfilePage />} />
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/payment-canceled" element={<PaymentCanceled />} />
+              <Route path="/hotels/:id" element={<HotelPage />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
             </Routes>
             <Footer />
+
+            {/* Chat widget persists across routes */}
+            <ChatWidget />
           </BrowserRouter>
         </HotelProvider>
       </TooltipProvider>
