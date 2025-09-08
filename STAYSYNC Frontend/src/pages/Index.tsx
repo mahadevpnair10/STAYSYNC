@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BedDouble, ConciergeBell, Sparkles, CreditCard } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import HotelsGrid from "@/components/HotelsGrid";
 
 const Index = () => {
   const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
@@ -151,6 +152,20 @@ const Index = () => {
             </p>
           </CardContent>
         </Card>
+      </section>
+      {/* Hotels Showcase Section */}
+      <section className="py-20 bg-white">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold mb-4">
+              Discover Amazing Properties
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              Browse through our curated selection of hotels and find the perfect stay for your needs.
+            </p>
+          </div>
+          <HotelsGrid />
+        </div>
       </section>
 
       {/* CTA */}
