@@ -1,11 +1,11 @@
 import SEO from "@/components/SEO";
 import heroImage from "@/assets/hero-hotel.jpg";
 import { Button } from "@/components/ui/button";
+import HotelsGrid from "@/components/HotelsGrid";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { BedDouble, ConciergeBell, Sparkles, CreditCard, Star, ArrowRight, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import HotelsGrid from "@/components/HotelsGrid";
 
 const Index = () => {
   const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
