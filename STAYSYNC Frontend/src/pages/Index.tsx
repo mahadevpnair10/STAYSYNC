@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { BedDouble, ConciergeBell, Sparkles, CreditCard, Star, ArrowRight, ChevronRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
-import HotelsGrid from "@/components/HotelsGrid";
 
 const Index = () => {
   const [user, setUser] = useState<{ name: string; email: string; role: string } | null>(null);
