@@ -1,0 +1,1037 @@
+[
+    {
+        "date": "2022-01-01",
+        "name": "New Year's Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-01-09",
+        "name": "Guru Gobind Singh's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-01-13",
+        "name": "Lohri (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-01-14",
+        "name": "Makar Sankranti/ Magha Bihu/ Pongal (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-01-26",
+        "name": "Republic Day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-02-05",
+        "name": "Basant Panchami / Sri Panchami  (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-02-15",
+        "name": "Hazarat Ali's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-02-16",
+        "name": "Guru Ravidas's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-02-19",
+        "name": "Shivaji Jayanti (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-02-26",
+        "name": "Swami Dayananda Saraswati Jayanti (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-03-01",
+        "name": "Maha Shivaratri (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-03-17",
+        "name": "Holika Dahan (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-03-18",
+        "name": "Holi  (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-03-18",
+        "name": "Dolyatra (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-04-02",
+        "name": "Chaitra Sukladi/ Gudi Padava/ Ugadi/ Cheti Chand (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-04-10",
+        "name": "Ram Navami (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-04-14",
+        "name": "Mahavir Jayanti (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-04-14",
+        "name": "Vaisakhi/ Vishu/ Meshadi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-04-14",
+        "name": "Birthday of Dr. B. R. Ambedkar (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-04-15",
+        "name": "Good Friday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-04-15",
+        "name": "Vaisakhadi (Bengal)/ Bahag Bihu (Assam) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-04-17",
+        "name": "Easter Sunday  (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-04-29",
+        "name": "Jamat-Ul-Vida (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-05-03",
+        "name": "Id-ul- Fitr (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-05-09",
+        "name": "Guru Rabindranath's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-05-16",
+        "name": "Buddha Purnima (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-07-01",
+        "name": "Rath Yatra (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-07-10",
+        "name": "Id-ul-Zuha (Bakrid) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-08-09",
+        "name": "Muharram (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-08-11",
+        "name": "Raksha Bandhan (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-08-15",
+        "name": "Independence day  (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-08-16",
+        "name": "Parsi New Year's day/ Nauraj (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-08-18",
+        "name": "Janmashtami (Smarta) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-08-19",
+        "name": "Janmashtami (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-08-31",
+        "name": "Vinayaka Chaturthi/ Ganesh Chaturthi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-09-08",
+        "name": "Onam or Thiru Onam Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-10-02",
+        "name": "Mahatma Gandhi's Birthday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-10-02",
+        "name": "Dussehra (Maha Saptami) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-10-03",
+        "name": "Dussehra (Maha Ashtami) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-10-04",
+        "name": "Dussehra (Maha Navmi) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-10-05",
+        "name": "Dussehra (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-10-09",
+        "name": "Milad-un-Nabi or Id-e-Milad (Birthday of Prophet Mohammad) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-10-09",
+        "name": "Maharishi Valmiki's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-10-13",
+        "name": "Karaka Chaturthi (Karva Chouth) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-10-24",
+        "name": "Diwali (Deepawali) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-10-24",
+        "name": "Naraka Chaturdasi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-10-25",
+        "name": "Govardhan Puja (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-10-26",
+        "name": "Bhai Duj (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-10-30",
+        "name": "Pratihar Sashthi or Surya Sashthi (Chhat Puja) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-11-08",
+        "name": "Guru Nanak's Birthday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-11-24",
+        "name": "Guru Teg Bahadur's Martyrdom Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-12-24",
+        "name": "Christmas Eve (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2022-12-25",
+        "name": "Christmas Day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2022-12-29",
+        "name": "Guru Gobind Singh's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-01-01",
+        "name": "New Year's Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-01-14",
+        "name": "Makar Sankranti/Magha Bihu (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-01-15",
+        "name": "Pongal (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-01-26",
+        "name": "Republic Day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-01-26",
+        "name": "Basant Panchami/Sri Panchami (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-02-05",
+        "name": "Hazarat Ali's Birthday, Guru Ravidas's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-02-15",
+        "name": "Swami Dayananda Saraswati Jayanti (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-02-18",
+        "name": "Maha Shivaratri (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-02-19",
+        "name": "Shivaji Jayanti (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-03-07",
+        "name": "Holika Dahan, Dolyatra (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-03-08",
+        "name": "Holi (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-03-22",
+        "name": "Chaitra Sukladi/ Gudi Padava/ Ugadi/ Cheti Chand (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-03-30",
+        "name": "Ram Navami (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-04-04",
+        "name": "Mahavir Jayanti (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-04-07",
+        "name": "Good Friday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-04-09",
+        "name": "Easter Sunday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-04-14",
+        "name": "Vaisakhi/Vishu/Meshadi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-04-14",
+        "name": "Birthday of Dr. B. R. Ambedkar (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-04-15",
+        "name": "Vaisakhadi (Bengal)/ Bahag Bihu (Assam) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-04-21",
+        "name": "Jamat-Ul-Vida (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-04-22",
+        "name": "Id-ul-Fitr (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-05-05",
+        "name": "Buddha Purnima (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-05-09",
+        "name": "Guru Rabindranath's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-06-20",
+        "name": "Rath Yatra (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-06-29",
+        "name": "Id-ul-Zuha (Bakrid) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-07-29",
+        "name": "Muharram (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-08-15",
+        "name": "Independence Day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-08-16",
+        "name": "Parsi New Year's day/ Nauraj (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-08-20",
+        "name": "Vinayaka Chaturthi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-08-29",
+        "name": "Onam or Thiru Onam Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-08-30",
+        "name": "Raksha Bandhan (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-09-06",
+        "name": "Janmashtami (Smarta) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-09-07",
+        "name": "Janmashtami (Vaishnva) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-09-19",
+        "name": "Ganesh Chaturthi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-09-28",
+        "name": "Milad-un-Nabi or Id-e-Milad (Birthday of Prophet Mohammad) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-10-02",
+        "name": "Mahatma Gandhi's Birthday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-10-21",
+        "name": "Dussehra (Saptami) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-10-22",
+        "name": "Dussehra (Maha Ashtami) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-10-23",
+        "name": "Dussehra (Maha Navmi) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-10-24",
+        "name": "Dussehra (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-10-28",
+        "name": "Maharishi Valmiki's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-11-01",
+        "name": "Karaka Chaturthi (Karva Chouth) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-11-12",
+        "name": "Diwali (Deepawali) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-11-12",
+        "name": "Naraka Chaturdasi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-11-13",
+        "name": "Govardhan Puja (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-11-15",
+        "name": "Bhai Duj (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-11-19",
+        "name": "Pratihar Sashthi or Surya Sashthi (Chhat Puja) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-11-24",
+        "name": "Guru Teg Bahadur's Martyrdom Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-11-27",
+        "name": "Guru Nanak's Birthday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2023-12-24",
+        "name": "Christmas Eve (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2023-12-25",
+        "name": "Christmas Day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-01-01",
+        "name": "New Year's Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-01-13",
+        "name": "Lohri (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-01-14",
+        "name": "Makar Sankranti (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-01-15",
+        "name": "Magha Bihu/ Pongal (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-01-17",
+        "name": "Guru Gobind Singh's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-01-25",
+        "name": "Hazarat Ali's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-01-26",
+        "name": "Republic Day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-02-14",
+        "name": "Basant Panchami / Sri Panchami (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-02-19",
+        "name": "Shivaji Jayanti (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-02-24",
+        "name": "Guru Ravidas's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-03-06",
+        "name": "Swami Dayananda Saraswati Jayanti (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-03-08",
+        "name": "Maha Shivaratri (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-03-24",
+        "name": "Holika Dahan (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-03-25",
+        "name": "Holi (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-03-25",
+        "name": "Dolyatra (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-03-29",
+        "name": "Good Friday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-03-31",
+        "name": "Easter Sunday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-04-05",
+        "name": "Jamat-Ul-Vida (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-04-09",
+        "name": "Chaitra Sukladi/ Gudi Padava/ Ugadi/ Cheti Chand (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-04-11",
+        "name": "Id-ul- Fitr (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-04-13",
+        "name": "Vaisakhi/ Vishu (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-04-14",
+        "name": "Meshadi (Tamil New Year's Day) / Vaisakhadi (Bengal)/ Bahag Bihu (Assam) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-04-17",
+        "name": "Ram Navami (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-04-21",
+        "name": "Mahavir Jayanti (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-05-08",
+        "name": "Guru Rabindranath's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-05-23",
+        "name": "Buddha Purnima (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-06-17",
+        "name": "Id-ul-Zuha (Bakrid) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-07-07",
+        "name": "Rath Yatra (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-07-17",
+        "name": "Muharram (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-08-15",
+        "name": "Independence Day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-08-15",
+        "name": "Parsi New Year's day / Nauraj (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-08-19",
+        "name": "Raksha Bandhan (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-08-26",
+        "name": "Janmashtami (Vaishnva) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-09-07",
+        "name": "Ganesh Chaturthi / Vinayaka Chaturthi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-09-15",
+        "name": "Onam or Thiru Onam Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-09-16",
+        "name": "Milad-un-Nabi or Id-e-Milad (Birthday of Prophet Mohammad) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-10-02",
+        "name": "Mahatma Gandhi's Birthday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-10-10",
+        "name": "Dussehra (Maha Saptami) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-10-11",
+        "name": "Dussehra (Maha Ashtami) / Dussehra (Maha Navmi) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-10-12",
+        "name": "Dussehra (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-10-17",
+        "name": "Maharishi Valmiki's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-10-20",
+        "name": "Karaka Chaturthi (Karva Chouth) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-10-31",
+        "name": "Diwali (Deepawali) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-10-31",
+        "name": "Naraka Chaturdasi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-11-02",
+        "name": "Govardhan Puja (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-11-03",
+        "name": "Bhai Duj (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-11-07",
+        "name": "Pratihar Sashthi or Surya Sashthi (Chhat Puja) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-11-15",
+        "name": "Guru Nanak's Birthday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2024-11-24",
+        "name": "Guru Teg Bahadur's Martyrdom Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-12-24",
+        "name": "Christmas Eve (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2024-12-25",
+        "name": "Christmas Day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-01-01",
+        "name": "New Year's Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-01-06",
+        "name": "Guru Gobind Singh's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-01-14",
+        "name": "Makar Sankranti/ Magha Bihu/ Pongal/ Hazarat Ali's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-01-26",
+        "name": "Republic Day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-02-02",
+        "name": "Basant Panchami / Sri Panchami (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-02-12",
+        "name": "Guru Ravidas's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-02-19",
+        "name": "Shivaji Jayanti (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-02-23",
+        "name": "Swami Dayananda Saraswati Jayanti (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-02-26",
+        "name": "Maha Shivaratri (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-03-13",
+        "name": "Holika Dahan (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-03-14",
+        "name": "Holi (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-03-14",
+        "name": "Dolyatra (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-03-28",
+        "name": "Jamat-Ul-Vida (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-03-30",
+        "name": "Chaitra Sukladi/ Gudi Padava/ Ugadi/ Cheti Chand (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-03-31",
+        "name": "Id-ul-Fitr (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-04-06",
+        "name": "Ram Navami (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-04-10",
+        "name": "Mahavir Jayanti (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-04-13",
+        "name": "Vaisakhi/ Vishu (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-04-14",
+        "name": "Meshadi (Tamil New Year's Day) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-04-15",
+        "name": "Vaisakhadi (Bengal)/ Bahag Bihu (Assam) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-04-18",
+        "name": "Good Friday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-04-20",
+        "name": "Easter Sunday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-05-09",
+        "name": "Guru Rabindranath's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-05-12",
+        "name": "Buddha Purnima (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-06-07",
+        "name": "Id-ul-Zuha (Bakrid) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-06-27",
+        "name": "Rath Yatra (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-07-06",
+        "name": "Muharram (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-08-09",
+        "name": "Raksha Bandhan (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-08-15",
+        "name": "Independence day (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-08-15",
+        "name": "Parsi New Year's day/ Nauraj (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-08-15",
+        "name": "Janmashtami (Smarta) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-08-16",
+        "name": "Janmashtami (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-08-27",
+        "name": "Ganesh Chaturthi / Vinayaka Chaturthi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-09-05",
+        "name": "Milad-un-Nabi or Id-e-Milad (Birthday of Prophet Mohammad) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-09-05",
+        "name": "Onam or Thiru Onam Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-09-29",
+        "name": "Dussehra (Maha Saptami) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-09-30",
+        "name": "Dussehra (Maha Ashtami) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-10-01",
+        "name": "Dussehra (Maha Navmi) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-10-02",
+        "name": "Mahatma Gandhi's Birthday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-10-02",
+        "name": "Dussehra (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-10-07",
+        "name": "Maharishi Valmiki's Birthday (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-10-10",
+        "name": "Karaka Chaturthi (Karva Chouth) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-10-20",
+        "name": "Diwali (Deepawali) (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-10-20",
+        "name": "Naraka Chaturdasi (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-10-22",
+        "name": "Govardhan Puja (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-10-23",
+        "name": "Bhai Duj (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-10-28",
+        "name": "Pratihar Sashthi or Surya Sashthi (Chhat Puja) (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-11-05",
+        "name": "Guru Nanak's Birthday (G)",
+        "type": "Gazetted"
+    },
+    {
+        "date": "2025-11-24",
+        "name": "Guru Teg Bahadur's Martyrdom Day (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-12-24",
+        "name": "Christmas Eve (R)",
+        "type": "Restricted"
+    },
+    {
+        "date": "2025-12-25",
+        "name": "Christmas Day (G)",
+        "type": "Gazetted"
+    }
+]

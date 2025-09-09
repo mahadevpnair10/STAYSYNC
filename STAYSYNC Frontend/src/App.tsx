@@ -19,6 +19,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProfilePage from "./pages/ProfilePage";
 import HotelPage from "@/pages/HotelPage";
+import HotelForecast from "./pages/HotelForecast";
 
 import ChatWidget from "@/components/ChatWidget";
 
@@ -43,6 +44,7 @@ const App: React.FC = () => (
               <Route path="/payment-success" element={<PaymentSuccess />} />
               <Route path="/payment-canceled" element={<PaymentCanceled />} />
               <Route path="/hotels/:id" element={<HotelPage />} />
+              <Route path="/forecast" element={<HotelForecast />} />
 
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
