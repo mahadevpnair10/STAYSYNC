@@ -249,7 +249,7 @@ export default function HotelsGrid() {
           >
             {/* Hotel Image */}
             <div className="relative h-40 overflow-hidden">
-              <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent z-10"></div>
+              <div className="absolute inset-0 from-background/80 to-transparent z-10"></div>
               <img
                 src={getRandomImage(hotel.property_id)}
                 alt={hotel.property_name}

@@ -544,10 +544,10 @@ const UserPortal = () => {
                   {currentBooking.hotel?.town}, {currentBooking.hotel?.state}
                 </p>
               </div>
-              <Button variant="outline" size="sm">
+              {/* <Button variant="outline" size="sm">
                 <Edit className="w-4 h-4 mr-2" />
                 Manage Stay
-              </Button>
+              </Button> */}
             </div>
           </CardContent>
         </Card>
@@ -582,7 +582,7 @@ const UserPortal = () => {
         </TabsList>
 
         <TabsContent value="bookings" className="space-y-6 mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
+          <div className="grid gap-6 lg:grid-cols-1">
             <Card>
               <CardHeader>
                 <CardTitle>Your Bookings</CardTitle>
@@ -640,7 +640,7 @@ const UserPortal = () => {
               </CardContent>
             </Card>
 
-            <Card>
+            {/* <Card>
               <CardHeader>
                 <CardTitle>Book a New Room</CardTitle>
                 <CardDescription>
@@ -741,7 +741,7 @@ const UserPortal = () => {
                   </div>
                 )}
               </CardContent>
-            </Card>
+            </Card> */}
           </div>
         </TabsContent>
 
