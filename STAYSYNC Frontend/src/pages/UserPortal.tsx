@@ -56,11 +56,12 @@ interface Booking {
     room_type: string;
     price: number;
     hotel_id: number;
-  };
-  hotel?: {
-    property_name: string;
-    town: string;
-    state: string;
+    hotel?: {
+      property_id: number;
+      property_name: string;
+      town: string;
+      state: string;
+    };
   };
 }
 
@@ -73,6 +74,7 @@ interface RoomServiceOrder {
   status: string;
   total_amount: number;
   created_at?: string;
+  property_id?: number;
 }
 
 interface HousekeepingRequest {
@@ -83,15 +85,16 @@ interface HousekeepingRequest {
   preferred_time: string;
   status: string;
   created_at?: string;
+  property_id?: number;
 }
 
 interface Feedback {
   id?: number;
-  booking_id: number;
   user_id: string;
   rating: number;
   comment: string;
   created_at?: string;
+  property_id?: number;
 }
 
 interface Payment {
@@ -146,7 +149,7 @@ const UserPortal = () => {
         
         setUser(authUser);
 
-        // Fetch user's bookings with room details
+        // Fetch user's bookings with room details first
         const { data: bookingsData, error: bookingsError } = await supabase
           .from('bookings')
           .select(`
@@ -163,44 +166,38 @@ const UserPortal = () => {
 
         if (bookingsError) throw bookingsError;
 
-        // Get hotel IDs from the rooms
-        const hotelIds = bookingsData
-          ?.map(booking => booking.rooms?.hotel_id)
-          .filter((id, index, arr) => id && arr.indexOf(id) === index) || [];
+        // Then fetch hotel details separately for each booking
+        const bookingsWithHotel = await Promise.all(
+          (bookingsData || []).map(async (booking) => {
+            if (booking.rooms?.hotel_id) {
+              const { data: hotelData } = await supabase
+                .from('hotel')
+                .select('property_id, property_name, town, state')
+                .eq('property_id', booking.rooms.hotel_id)
+                .single();
+              
+              return {
+                ...booking,
+                rooms: {
+                  ...booking.rooms,
+                  hotel: hotelData
+                }
+              };
+            }
+            return booking;
+          })
+        );
 
-        // Fetch hotel details for these IDs
-        let hotelsMap = {};
-        if (hotelIds.length > 0) {
-          const { data: hotelsData, error: hotelsError } = await supabase
-            .from('hotel')
-            .select('property_id, property_name, town, state')
-            .in('property_id', hotelIds);
-
-          if (hotelsError) throw hotelsError;
-          
-          // Create a mapping of hotel_id to hotel data
-          hotelsMap = hotelsData?.reduce((acc, hotel) => {
-            acc[hotel.property_id] = hotel;
-            return acc;
-          }, {}) || {};
-        }
-
-        // Combine bookings with hotel data
-        const bookingsWithHotels = bookingsData?.map(booking => ({
-          ...booking,
-          hotel: hotelsMap[booking.rooms?.hotel_id] || null
-        })) || [];
-
-        setBookings(bookingsWithHotels);
+        setBookings(bookingsWithHotel);
 
         // Set current active booking if exists
         const today = new Date().toISOString().split('T')[0];
-        const active = bookingsWithHotels.find(b => 
+        const active = bookingsWithHotel?.find(b => 
           b.start_date <= today && b.end_date >= today
         );
         setCurrentBooking(active || null);
 
-        // The rest of your data fetching code remains the same...
+        // Fetch room service orders with property_id
         const { data: roomServiceData, error: roomServiceError } = await supabase
           .from('room_service_orders')
           .select('*')
@@ -210,7 +207,35 @@ const UserPortal = () => {
         if (roomServiceError) throw roomServiceError;
         setRoomServiceOrders(roomServiceData || []);
 
-        // Continue with other data fetches...
+        // Fetch housekeeping requests with property_id
+        const { data: housekeepingData, error: housekeepingError } = await supabase
+          .from('housekeeping_requests')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .order('created_at', { ascending: false });
+
+        if (housekeepingError) throw housekeepingError;
+        setHousekeepingRequests(housekeepingData || []);
+
+        // Fetch feedbacks with property_id
+        const { data: feedbackData, error: feedbackError } = await supabase
+          .from('feedback')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .order('created_at', { ascending: false });
+
+        if (feedbackError) throw feedbackError;
+        setFeedbacks(feedbackData || []);
+
+        // Fetch payments
+        const { data: paymentData, error: paymentError } = await supabase
+          .from('payments')
+          .select('*')
+          .eq('user_id', authUser.id)
+          .order('created_at', { ascending: false });
+
+        if (paymentError) throw paymentError;
+        setPayments(paymentData || []);
 
       } catch (error) {
         console.error('Error fetching user data:', error);
@@ -256,7 +281,8 @@ const UserPortal = () => {
           item_name: roomServiceForm.item,
           preferred_time: roomServiceForm.preferredTime,
           status: 'pending',
-          total_amount: 0 // In a real app, you'd calculate this based on menu items
+          total_amount: 0,
+          property_id: currentBooking.rooms.hotel_id
         })
         .select()
         .single();
@@ -308,7 +334,8 @@ const UserPortal = () => {
           user_id: user.id,
           service_type: housekeepingForm.serviceType,
           preferred_time: housekeepingForm.preferredTime,
-          status: 'pending'
+          status: 'pending',
+          property_id: currentBooking.rooms.hotel_id
         })
         .select()
         .single();
@@ -356,10 +383,10 @@ const UserPortal = () => {
       const { data, error } = await supabase
         .from('feedback')
         .insert({
-          booking_id: currentBooking.id,
           user_id: user.id,
           rating: feedback.rating,
-          comment: feedback.comment
+          comment: feedback.comment,
+          property_id: currentBooking.rooms.hotel_id
         })
         .select()
         .single();
@@ -445,7 +472,8 @@ const UserPortal = () => {
         (1000 * 60 * 60 * 24)
       );
 
-      const { data, error } = await supabase
+      // First insert the booking
+      const { data: bookingData, error: bookingError } = await supabase
         .from('bookings')
         .insert({
           room_id: selectedRoom.id,
@@ -461,14 +489,33 @@ const UserPortal = () => {
             room_type,
             price,
             hotel_id
-          ),
-          hotel:hotel(property_name, town, state)
+          )
         `)
         .single();
 
-      if (error) throw error;
+      if (bookingError) throw bookingError;
 
-      setBookings(prev => [data, ...prev]);
+      // Then fetch hotel details for the new booking
+      if (bookingData?.rooms?.hotel_id) {
+        const { data: hotelData } = await supabase
+          .from('hotel')
+          .select('property_id, property_name, town, state')
+          .eq('property_id', bookingData.rooms.hotel_id)
+          .single();
+
+        const completeBooking = {
+          ...bookingData,
+          rooms: {
+            ...bookingData.rooms,
+            hotel: hotelData
+          }
+        };
+
+        setBookings(prev => [completeBooking, ...prev]);
+      } else {
+        setBookings(prev => [bookingData, ...prev]);
+      }
+
       setBookingForm({ guestName: "", checkIn: "", checkOut: "" });
       
       toast({ 
@@ -561,10 +608,10 @@ const UserPortal = () => {
                       </span>
                     </div>
                     <h3 className="font-bold text-xl" style={{ color: '#334443' }}>
-                      {currentBooking.rooms.room_type} at {currentBooking.hotel?.property_name}
+                      {currentBooking.rooms.room_type} at {currentBooking.rooms.hotel?.property_name}
                     </h3>
                     <p className="text-sm mt-1" style={{ color: '#34656D' }}>
-                      {currentBooking.hotel?.town}, {currentBooking.hotel?.state}
+                      {currentBooking.rooms.hotel?.town}, {currentBooking.rooms.hotel?.state}
                     </p>
                   </div>
                 </div>
@@ -687,7 +734,7 @@ const UserPortal = () => {
                             <div>
                               <h4 className="font-bold text-lg mb-1" style={{ color: '#334443' }}>{booking.rooms.room_type}</h4>
                               <p className="text-sm" style={{ color: '#34656D' }}>
-                                {booking.hotel?.property_name}
+                                {booking.rooms.hotel?.property_name}
                               </p>
                             </div>
                             <Badge className="px-3 py-1 rounded-full font-medium" style={{ 

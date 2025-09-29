@@ -45,20 +45,53 @@ export default function HotelsGrid() {
   const hotelsPerPage = 18; // 3 rows × 6 columns
 
   useEffect(() => {
-    const fetchHotels = async () => {
-      const { data, error } = await supabase.from("hotel").select("*"); // Fetch ALL hotels
+    // Fetch all hotels in batches (Supabase returns max 1000 rows per request)
+    const fetchAllHotels = async () => {
+      setLoading(true);
+      try {
+        let all: Hotel[] = [];
+        const batchSize = 1000; // Supabase hard cap per query
+        let from = 0;
 
-      if (error) {
-        console.error(error);
-      } else {
-        const sortedData = sortHotels(data as Hotel[], sortBy);
+        while (true) {
+          const to = from + batchSize - 1;
+          const { data, error } = await supabase
+            .from("hotel")
+            .select("*")
+            .order("property_id", { ascending: true })
+            .range(from, to);
+
+          if (error) {
+            console.error("Supabase error while fetching hotels:", error);
+            break;
+          }
+
+          if (!data || data.length === 0) {
+            break; // no more rows
+          }
+
+          all = all.concat(data as Hotel[]);
+
+          // if fewer than batch size returned, we've reached the end
+          if (data.length < batchSize) break;
+
+          // move to next batch
+          from += batchSize;
+        }
+
+        const sortedData = sortHotels(all, sortBy);
         setAllHotels(sortedData || []);
         setFilteredHotels(sortedData || []);
+      } catch (err) {
+        console.error("Unexpected error while fetching hotels:", err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
-    fetchHotels();
+    fetchAllHotels();
+    // Intentionally empty deps: fetch once on mount.
+    // Sorting state is handled in the other effect when user changes sort/filter.
   }, []);
 
   // Sort hotels based on selected criteria
@@ -66,29 +99,40 @@ export default function HotelsGrid() {
     const sorted = [...hotels];
     switch (criteria) {
       case "rating":
-        return sorted.sort((a, b) => b.star_rating - a.star_rating);
+        return sorted.sort((a, b) => (b.star_rating ?? 0) - (a.star_rating ?? 0));
       case "distance":
-        return sorted.sort((a, b) => a.distance_from_center - b.distance_from_center);
+        return sorted.sort((a, b) => (a.distance_from_center ?? 0) - (b.distance_from_center ?? 0));
       case "name":
       default:
-        return sorted.sort((a, b) => a.property_name.localeCompare(b.property_name));
+        // guard against null property_name by coercing to empty string
+        return sorted.sort((a, b) => (a.property_name ?? "").localeCompare(b.property_name ?? ""));
     }
   };
 
-  // Filter hotels based on search term
+  // Filter hotels based on search term (and re-sort on sortBy changes)
   useEffect(() => {
-    if (!searchTerm.trim()) {
+    const q = searchTerm.trim().toLowerCase();
+
+    if (!q) {
       setFilteredHotels(sortHotels(allHotels, sortBy));
     } else {
-      const q = searchTerm.toLowerCase();
-      const filtered = allHotels.filter((hotel) =>
-        hotel.property_name.toLowerCase().includes(q) ||
-        hotel.town?.toLowerCase().includes(q) ||
-        hotel.state?.toLowerCase().includes(q) ||
-        hotel.property_type.toLowerCase().includes(q)
-      );
+      const filtered = allHotels.filter((hotel) => {
+        const name = (hotel.property_name ?? "").toString().toLowerCase();
+        const town = (hotel.town ?? "").toString().toLowerCase();
+        const state = (hotel.state ?? "").toString().toLowerCase();
+        const type = (hotel.property_type ?? "").toString().toLowerCase();
+
+        return (
+          name.includes(q) ||
+          town.includes(q) ||
+          state.includes(q) ||
+          type.includes(q)
+        );
+      });
+
       setFilteredHotels(sortHotels(filtered, sortBy));
     }
+
     setCurrentPage(1); // Reset to first page when searching
   }, [searchTerm, allHotels, sortBy]);
 
@@ -102,7 +146,7 @@ export default function HotelsGrid() {
   const getPageNumbers = () => {
     const pages: (number | string)[] = [];
     const maxVisiblePages = 5;
-    
+
     if (totalPages <= maxVisiblePages) {
       for (let i = 1; i <= totalPages; i++) {
         pages.push(i);
@@ -156,19 +200,19 @@ export default function HotelsGrid() {
               className="pl-10 pr-4 py-2 w-full rounded-full bg-background/80 backdrop-blur-sm"
             />
           </div>
-          
+
           <div className="flex items-center gap-2 w-full md:w-auto">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsFilterOpen(!isFilterOpen)}
               className="flex items-center gap-2 rounded-full"
             >
               <Filter className="h-4 w-4" />
               Filters
             </Button>
-            
+
             <div className="relative">
-              <select 
+              <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
                 className="py-2 pl-3 pr-10 bg-background border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-primary/20 appearance-none"
@@ -185,7 +229,7 @@ export default function HotelsGrid() {
             </div>
           </div>
         </div>
-        
+
         {/* Filter Panel */}
         {isFilterOpen && (
           <div className="mt-4 p-4 bg-background/50 rounded-lg border">
@@ -201,9 +245,9 @@ export default function HotelsGrid() {
                 <label className="text-sm font-medium mb-2 block">Star Rating</label>
                 <div className="flex flex-wrap gap-2">
                   {[5, 4, 3, 2, 1].map(rating => (
-                    <Button 
-                      key={rating} 
-                      variant="outline" 
+                    <Button
+                      key={rating}
+                      variant="outline"
                       size="sm"
                       className="rounded-full flex items-center gap-1"
                     >
@@ -213,7 +257,7 @@ export default function HotelsGrid() {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">Property Type</label>
                 <div className="flex flex-wrap gap-2">
@@ -224,7 +268,7 @@ export default function HotelsGrid() {
                   ))}
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">Distance</label>
                 <div className="flex flex-wrap gap-2">
@@ -252,7 +296,7 @@ export default function HotelsGrid() {
               <div className="absolute inset-0 from-background/80 to-transparent z-10"></div>
               <img
                 src={getRandomImage(hotel.property_id)}
-                alt={hotel.property_name}
+                alt={hotel.property_name ?? "Hotel image"}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                 loading="lazy"
               />
@@ -260,7 +304,7 @@ export default function HotelsGrid() {
                 <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
                 {hotel.star_rating}
               </div>
-              
+
               {/* Premium badge for 4+ star hotels */}
               {hotel.star_rating >= 4 && (
                 <div className="absolute top-3 left-3 bg-gradient-to-r from-amber-500 to-orange-600 text-white text-xs font-bold px-2 py-1 rounded-full z-20">
@@ -272,21 +316,21 @@ export default function HotelsGrid() {
             {/* Hotel Content */}
             <div className="p-4">
               <h3 className="font-semibold text-sm mb-2 line-clamp-2 leading-tight group-hover:text-primary transition-colors">
-                {hotel.property_name}
+                {hotel.property_name ?? "Unnamed property"}
               </h3>
-              
+
               <div className="space-y-2 text-xs text-muted-foreground">
                 <div className="inline-block bg-primary/10 text-primary px-2 py-1 rounded-full capitalize">
-                  {hotel.property_type}
+                  {hotel.property_type ?? "Unknown"}
                 </div>
-                
+
                 {hotel.town && hotel.state && (
                   <div className="flex items-center gap-1">
                     <MapPin className="h-3 w-3" />
                     <span className="line-clamp-1">{hotel.town}, {hotel.state}</span>
                   </div>
                 )}
-                
+
                 <div className="flex justify-between items-center">
                   <span>{hotel.distance_from_center} km from center</span>
                 </div>
@@ -300,7 +344,7 @@ export default function HotelsGrid() {
                 View Details
               </Button>
             </div>
-            
+
             {/* Hover effect overlay */}
             <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-primary/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-2xl pointer-events-none"></div>
           </div>
@@ -315,7 +359,7 @@ export default function HotelsGrid() {
             <span className="font-medium">{filteredHotels.length}</span> results
             {searchTerm && <span> (filtered from {allHotels.length} total)</span>}
           </div>
-          
+
           <div className="flex items-center gap-2">
             {/* Previous Button */}
             <Button

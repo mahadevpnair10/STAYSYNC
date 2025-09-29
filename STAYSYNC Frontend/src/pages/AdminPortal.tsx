@@ -1,995 +1,1482 @@
-// import SEO from "@/components/SEO";
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-// import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input";
-// import { Label } from "@/components/ui/label";
-// import { Slider } from "@/components/ui/slider";
-// import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-// import { Skeleton } from "@/components/ui/skeleton";
-// import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-// import { Area, AreaChart, Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
-// import { useToast } from "@/hooks/use-toast";
-// import { useEffect, useMemo, useState } from "react";
-// import { useHotel, Room, RoomStatus } from "@/contexts/HotelContext";
-// import { FloorMap } from "@/components/FloorMap";
-
-// const formatINR = new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" });
-
-// const AdminPortal = () => {
-//   const { toast } = useToast();
-//   const { rooms, floors, addRoom, updateRoom, deleteRoom, addFloor, deleteFloor } = useHotel();
-
-//   const [roomDialogOpen, setRoomDialogOpen] = useState(false);
-//   const [floorDialogOpen, setFloorDialogOpen] = useState(false);
-//   const [editing, setEditing] = useState<Room | null>(null);
-//   const [form, setForm] = useState<Pick<Room, "type" | "status" | "price" | "floor">>({ 
-//     type: "Standard", 
-//     status: "available", 
-//     price: 2999, 
-//     floor: 1 
-//   });
-//   const [floorForm, setFloorForm] = useState({ number: 1, name: "" });
-
-//   // Filters & sorting
-//   const [search, setSearch] = useState("");
-//   const [statusFilter, setStatusFilter] = useState<RoomStatus | "all">("all");
-//   const [priceRange, setPriceRange] = useState<[number, number]>([1000, 15000]);
-//   const [sort, setSort] = useState<"price-asc" | "price-desc" | "type" | "status">("price-asc");
-
-//   const filteredRooms = useMemo(() => {
-//     let list = rooms.filter((r) =>
-//       r.type.toLowerCase().includes(search.toLowerCase()) &&
-//       (statusFilter === "all" ? true : r.status === statusFilter) &&
-//       r.price >= priceRange[0] && r.price <= priceRange[1]
-//     );
-//     switch (sort) {
-//       case "price-asc":
-//         list = list.sort((a, b) => a.price - b.price);
-//         break;
-//       case "price-desc":
-//         list = list.sort((a, b) => b.price - a.price);
-//         break;
-//       case "type":
-//         list = list.sort((a, b) => a.type.localeCompare(b.type));
-//         break;
-//       case "status":
-//         list = list.sort((a, b) => a.status.localeCompare(b.status));
-//         break;
-//     }
-//     return list;
-//   }, [rooms, search, statusFilter, priceRange, sort]);
-
-//   const openAddDialog = () => {
-//     setEditing(null);
-//     setForm({ type: "Standard", status: "available", price: 2999, floor: 1 });
-//     setRoomDialogOpen(true);
-//   };
-  
-//   const openEditDialog = (room: Room) => {
-//     setEditing(room);
-//     setForm({ type: room.type, status: room.status, price: room.price, floor: room.floor });
-//     setRoomDialogOpen(true);
-//   };
-  
-//   const saveRoom = () => {
-//     if (editing) {
-//       // TODO: Backend: updateRoom(editing.id, form)
-//       updateRoom(editing.id, form);
-//       toast({ title: "Room updated" });
-//     } else {
-//       // TODO: Backend: createRoom(form)
-//       const roomData = {
-//         ...form,
-//         position: { x: 0, y: 0 } // Auto-arranged by FloorMap component
-//       };
-//       addRoom(roomData);
-//       toast({ title: "Room created" });
-//     }
-//     setRoomDialogOpen(false);
-//   };
-  
-//   const handleDeleteRoom = (id: string) => {
-//     // TODO: Backend: deleteRoom(id)
-//     deleteRoom(id);
-//     toast({ title: "Room deleted" });
-//   };
-
-//   const openFloorDialog = () => {
-//     setFloorForm({ number: Math.max(...floors.map(f => f.number), 0) + 1, name: "" });
-//     setFloorDialogOpen(true);
-//   };
-
-//   const saveFloor = () => {
-//     // TODO: Backend: createFloor(floorForm)
-//     addFloor(floorForm);
-//     toast({ title: "Floor added" });
-//     setFloorDialogOpen(false);
-//   };
-
-//   const handleDeleteFloor = (floorNumber: number) => {
-//     // TODO: Backend: deleteFloor(floorNumber)
-//     deleteFloor(floorNumber);
-//     toast({ title: "Floor deleted" });
-//   };
-
-//   // Accounting mock data + loading
-//   const [loadingAccounting, setLoadingAccounting] = useState(true);
-//   useEffect(() => {
-//     const t = setTimeout(() => setLoadingAccounting(false), 700);
-//     return () => clearTimeout(t);
-//   }, []);
-
-//   const revenueData = [
-//     { month: "Jan", revenue: 1200000, expenses: 800000 },
-//     { month: "Feb", revenue: 1350000, expenses: 820000 },
-//     { month: "Mar", revenue: 1500000, expenses: 900000 },
-//     { month: "Apr", revenue: 1420000, expenses: 880000 },
-//     { month: "May", revenue: 1600000, expenses: 950000 },
-//   ];
-//   const occupancyData = [
-//     { month: "Jan", occupancy: 72 },
-//     { month: "Feb", occupancy: 76 },
-//     { month: "Mar", occupancy: 81 },
-//     { month: "Apr", occupancy: 78 },
-//     { month: "May", occupancy: 85 },
-//   ];
-
-//   const ledger = [
-//     { id: "TRX-9001", type: "Payment", amount: 19900, date: "2025-08-10" },
-//     { id: "TRX-9002", type: "Refund", amount: -5900, date: "2025-08-11" },
-//   ];
-
-//   return (
-//     <main className="container mx-auto py-10">
-//       <SEO title="Admin Portal | STAYSYNC" description="Manage rooms, housekeeping, and accounting." canonical="/admin" />
-
-//       <h1 className="text-3xl font-bold">Admin Portal</h1>
-//       <p className="mt-2 text-muted-foreground">Control room inventory, staff tasks, and financials.</p>
-
-//       <Tabs defaultValue="rooms" className="mt-8">
-//         <TabsList>
-//           <TabsTrigger value="rooms">Rooms</TabsTrigger>
-//           <TabsTrigger value="floors">Floor Maps</TabsTrigger>
-//           <TabsTrigger value="housekeeping">Housekeeping</TabsTrigger>
-//           <TabsTrigger value="accounting">Accounting</TabsTrigger>
-//         </TabsList>
-
-//         <TabsContent value="rooms" className="space-y-4">
-//           <Card>
-//             <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-//               <div>
-//                 <CardTitle>Room Inventory</CardTitle>
-//                 <CardDescription>Add, update, filter and monitor availability.</CardDescription>
-//               </div>
-//               <div className="flex gap-2">
-//                 <Dialog open={floorDialogOpen} onOpenChange={setFloorDialogOpen}>
-//                   <DialogTrigger asChild>
-//                     <Button variant="outline" onClick={openFloorDialog}>Add Floor</Button>
-//                   </DialogTrigger>
-//                   <DialogContent>
-//                     <DialogHeader>
-//                       <DialogTitle>Add Floor</DialogTitle>
-//                       <DialogDescription>Create a new floor for room management.</DialogDescription>
-//                     </DialogHeader>
-//                     <div className="grid gap-4">
-//                       <div className="grid gap-2">
-//                         <Label htmlFor="floorNumber">Floor Number</Label>
-//                         <Input 
-//                           id="floorNumber" 
-//                           type="number" 
-//                           value={floorForm.number} 
-//                           onChange={(e) => setFloorForm(f => ({ ...f, number: Number(e.target.value || 0) }))} 
-//                         />
-//                       </div>
-//                       <div className="grid gap-2">
-//                         <Label htmlFor="floorName">Floor Name</Label>
-//                         <Input 
-//                           id="floorName" 
-//                           value={floorForm.name} 
-//                           onChange={(e) => setFloorForm(f => ({ ...f, name: e.target.value }))} 
-//                           placeholder="e.g., Ground Floor, First Floor"
-//                         />
-//                       </div>
-//                       <div className="flex justify-end gap-2 pt-2">
-//                         <Button variant="outline" onClick={() => setFloorDialogOpen(false)}>Cancel</Button>
-//                         <Button onClick={saveFloor}>Add Floor</Button>
-//                       </div>
-//                     </div>
-//                   </DialogContent>
-//                 </Dialog>
-                
-//                 <Dialog open={roomDialogOpen} onOpenChange={setRoomDialogOpen}>
-//                   <DialogTrigger asChild>
-//                     <Button onClick={openAddDialog}>Add Room</Button>
-//                   </DialogTrigger>
-//                   <DialogContent>
-//                     <DialogHeader>
-//                       <DialogTitle>{editing ? "Edit Room" : "Add Room"}</DialogTitle>
-//                       <DialogDescription>Define the room type, price, floor and status. Prices shown in INR ₹.</DialogDescription>
-//                     </DialogHeader>
-//                     <div className="grid gap-4">
-//                       <div className="grid gap-2">
-//                         <Label htmlFor="type">Type</Label>
-//                         <Input id="type" value={form.type} onChange={(e) => setForm((f) => ({ ...f, type: e.target.value }))} />
-//                       </div>
-//                       <div className="grid gap-2">
-//                         <Label htmlFor="price">Price per night</Label>
-//                         <Input id="price" type="number" value={form.price} onChange={(e) => setForm((f) => ({ ...f, price: Number(e.target.value || 0) }))} />
-//                       </div>
-//                       <div className="grid gap-2">
-//                         <Label>Floor</Label>
-//                         <Select value={form.floor.toString()} onValueChange={(v) => setForm((f) => ({ ...f, floor: Number(v) }))}>
-//                           <SelectTrigger>
-//                             <SelectValue placeholder="Select floor" />
-//                           </SelectTrigger>
-//                           <SelectContent>
-//                             {floors.map(floor => (
-//                               <SelectItem key={floor.number} value={floor.number.toString()}>
-//                                 {floor.name} (Floor {floor.number})
-//                               </SelectItem>
-//                             ))}
-//                           </SelectContent>
-//                         </Select>
-//                       </div>
-//                       <div className="grid gap-2">
-//                         <Label>Status</Label>
-//                         <Select value={form.status} onValueChange={(v: RoomStatus) => setForm((f) => ({ ...f, status: v }))}>
-//                           <SelectTrigger>
-//                             <SelectValue placeholder="Select status" />
-//                           </SelectTrigger>
-//                           <SelectContent>
-//                             <SelectItem value="available">Available</SelectItem>
-//                             <SelectItem value="occupied">Occupied</SelectItem>
-//                             <SelectItem value="cleaning">Cleaning</SelectItem>
-//                             <SelectItem value="maintenance">Maintenance</SelectItem>
-//                           </SelectContent>
-//                         </Select>
-//                       </div>
-//                       <div className="flex justify-end gap-2 pt-2">
-//                         <Button variant="outline" onClick={() => setRoomDialogOpen(false)}>Cancel</Button>
-//                         <Button onClick={saveRoom}>{editing ? "Save changes" : "Create room"}</Button>
-//                       </div>
-//                     </div>
-//                   </DialogContent>
-//                 </Dialog>
-//               </div>
-//             </CardHeader>
-//             <CardContent className="space-y-4">
-//               {/* Filters */}
-//               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-//                 <div className="space-y-2">
-//                   <Label htmlFor="search">Search type</Label>
-//                   <Input id="search" placeholder="e.g. Deluxe" value={search} onChange={(e) => setSearch(e.target.value)} />
-//                 </div>
-//                 <div className="space-y-2">
-//                   <Label>Status</Label>
-//                   <Select value={statusFilter} onValueChange={(v: any) => setStatusFilter(v)}>
-//                     <SelectTrigger>
-//                       <SelectValue placeholder="Any status" />
-//                     </SelectTrigger>
-//                     <SelectContent>
-//                       <SelectItem value="all">All</SelectItem>
-//                       <SelectItem value="available">Available</SelectItem>
-//                       <SelectItem value="occupied">Occupied</SelectItem>
-//                       <SelectItem value="cleaning">Cleaning</SelectItem>
-//                       <SelectItem value="maintenance">Maintenance</SelectItem>
-//                     </SelectContent>
-//                   </Select>
-//                 </div>
-//                 <div className="space-y-2">
-//                   <Label>Price range (₹)</Label>
-//                   <div className="px-1">
-//                     <Slider value={priceRange} onValueChange={(v) => setPriceRange(v as [number, number])} step={500} min={1000} max={20000} />
-//                     <div className="mt-1 flex justify-between text-sm text-muted-foreground"><span>{priceRange[0]}</span><span>{priceRange[1]}</span></div>
-//                   </div>
-//                 </div>
-//                 <div className="space-y-2">
-//                   <Label>Sort by</Label>
-//                   <Select value={sort} onValueChange={(v: any) => setSort(v)}>
-//                     <SelectTrigger>
-//                       <SelectValue />
-//                     </SelectTrigger>
-//                     <SelectContent>
-//                       <SelectItem value="price-asc">Price: Low to High</SelectItem>
-//                       <SelectItem value="price-desc">Price: High to Low</SelectItem>
-//                       <SelectItem value="type">Type (A–Z)</SelectItem>
-//                       <SelectItem value="status">Status</SelectItem>
-//                     </SelectContent>
-//                   </Select>
-//                 </div>
-//               </div>
-
-//               <Table>
-//                 <TableHeader>
-//                   <TableRow>
-//                     <TableHead>Room</TableHead>
-//                     <TableHead>Type</TableHead>
-//                     <TableHead>Floor</TableHead>
-//                     <TableHead>Price</TableHead>
-//                     <TableHead>Status</TableHead>
-//                     <TableHead className="text-right">Actions</TableHead>
-//                   </TableRow>
-//                 </TableHeader>
-//                 <TableBody>
-//                   {filteredRooms.map((r) => (
-//                     <TableRow key={r.id} className="animate-fade-in">
-//                       <TableCell>{r.id}</TableCell>
-//                       <TableCell>{r.type}</TableCell>
-//                       <TableCell>Floor {r.floor}</TableCell>
-//                       <TableCell>{formatINR.format(r.price)}</TableCell>
-//                       <TableCell className="capitalize">{r.status}</TableCell>
-//                       <TableCell className="text-right space-x-2">
-//                         <Button size="sm" variant="outline" onClick={() => openEditDialog(r)}>Edit</Button>
-//                         <Button size="sm" variant="destructive" onClick={() => handleDeleteRoom(r.id)}>Delete</Button>
-//                       </TableCell>
-//                     </TableRow>
-//                   ))}
-//                   {filteredRooms.length === 0 && (
-//                     <TableRow>
-//                       <TableCell colSpan={6} className="text-center text-muted-foreground">No rooms match your filters.</TableCell>
-//                     </TableRow>
-//                   )}
-//                 </TableBody>
-//               </Table>
-//             </CardContent>
-//           </Card>
-//         </TabsContent>
-
-//         <TabsContent value="floors" className="space-y-4">
-//           <div className="flex justify-between items-center">
-//             <div>
-//               <h3 className="text-lg font-semibold">Floor Maps</h3>
-//               <p className="text-muted-foreground">Visual representation of all floors and room layouts</p>
-//             </div>
-//           </div>
-          
-//           <div className="grid gap-6">
-//             {floors.map(floor => (
-//               <div key={floor.number} className="space-y-2">
-//                 <div className="flex items-center justify-between">
-//                   <h4 className="font-medium">Floor {floor.number}: {floor.name}</h4>
-//                   <Button 
-//                     variant="outline" 
-//                     size="sm" 
-//                     onClick={() => handleDeleteFloor(floor.number)}
-//                     disabled={rooms.some(r => r.floor === floor.number)}
-//                   >
-//                     Delete Floor
-//                   </Button>
-//                 </div>
-//                 <FloorMap floorNumber={floor.number} />
-//               </div>
-//             ))}
-            
-//             {floors.length === 0 && (
-//               <Card>
-//                 <CardContent className="flex items-center justify-center h-32">
-//                   <p className="text-muted-foreground">No floors created yet. Add a floor to get started.</p>
-//                 </CardContent>
-//               </Card>
-//             )}
-//           </div>
-//         </TabsContent>
-
-//         <TabsContent value="housekeeping">
-//           <Card>
-//             <CardHeader>
-//               <CardTitle>Housekeeping Tasks</CardTitle>
-//               <CardDescription>Assign, track, and complete tasks.</CardDescription>
-//             </CardHeader>
-//             <CardContent>
-//               <Table>
-//                 <TableHeader>
-//                   <TableRow>
-//                     <TableHead>ID</TableHead>
-//                     <TableHead>Room</TableHead>
-//                     <TableHead>Task</TableHead>
-//                     <TableHead>Status</TableHead>
-//                     <TableHead className="text-right">Actions</TableHead>
-//                   </TableRow>
-//                 </TableHeader>
-//                 <TableBody>
-//                   {[{ id: "HK-21", room: "202", task: "Full Cleaning", status: "In Progress" }, { id: "HK-22", room: "303", task: "Maintenance", status: "Queued" }].map((t) => (
-//                     <TableRow key={t.id}>
-//                       <TableCell>{t.id}</TableCell>
-//                       <TableCell>{t.room}</TableCell>
-//                       <TableCell>{t.task}</TableCell>
-//                       <TableCell>{t.status}</TableCell>
-//                       <TableCell className="text-right">
-//                         <Button size="sm" variant="outline" onClick={() => toast({ title: "Task marked complete" })}>Complete</Button>
-//                       </TableCell>
-//                     </TableRow>
-//                   ))}
-//                 </TableBody>
-//               </Table>
-//             </CardContent>
-//           </Card>
-//         </TabsContent>
-
-//         <TabsContent value="accounting" className="space-y-4">
-//           <Card>
-//             <CardHeader>
-//               <CardTitle>Revenue vs Expenses</CardTitle>
-//               <CardDescription>Financial overview in INR (₹)</CardDescription>
-//             </CardHeader>
-//             <CardContent>
-//               {loadingAccounting ? (
-//                 <div className="grid gap-3">
-//                   <Skeleton className="h-8 w-40" />
-//                   <Skeleton className="h-64 w-full" />
-//                 </div>
-//               ) : (
-//                 <ChartContainer config={{ revenue: { label: "Revenue", color: "hsl(var(--primary))" }, expenses: { label: "Expenses", color: "hsl(var(--accent))" } }}>
-//                   <BarChart data={revenueData}>
-//                     <CartesianGrid strokeDasharray="3 3" />
-//                     <XAxis dataKey="month" />
-//                     <YAxis tickFormatter={(v) => formatINR.format(v).replace(".00", "")} />
-//                     <ChartTooltip content={<ChartTooltipContent />} />
-//                     <Bar dataKey="revenue" fill="var(--color-revenue)" radius={4} />
-//                     <Bar dataKey="expenses" fill="var(--color-expenses)" radius={4} />
-//                   </BarChart>
-//                 </ChartContainer>
-//               )}
-//             </CardContent>
-//           </Card>
-
-//           <Card>
-//             <CardHeader>
-//               <CardTitle>Occupancy Rate</CardTitle>
-//               <CardDescription>Monthly occupancy percentage</CardDescription>
-//             </CardHeader>
-//             <CardContent>
-//               {loadingAccounting ? (
-//                 <Skeleton className="h-64 w-full" />
-//               ) : (
-//                 <ChartContainer config={{ occupancy: { label: "Occupancy", color: "hsl(var(--primary))" } }}>
-//                   <LineChart data={occupancyData}>
-//                     <CartesianGrid strokeDasharray="3 3" />
-//                     <XAxis dataKey="month" />
-//                     <YAxis domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
-//                     <ChartTooltip content={<ChartTooltipContent />} />
-//                     <Line type="monotone" dataKey="occupancy" stroke="var(--color-occupancy)" strokeWidth={2} dot={false} />
-//                   </LineChart>
-//                 </ChartContainer>
-//               )}
-//             </CardContent>
-//           </Card>
-
-//           <Card>
-//             <CardHeader>
-//               <CardTitle>Ledger</CardTitle>
-//               <CardDescription>Recent transactions</CardDescription>
-//             </CardHeader>
-//             <CardContent>
-//               <Table>
-//                 <TableHeader>
-//                   <TableRow>
-//                     <TableHead>ID</TableHead>
-//                     <TableHead>Type</TableHead>
-//                     <TableHead>Amount</TableHead>
-//                     <TableHead>Date</TableHead>
-//                   </TableRow>
-//                 </TableHeader>
-//                 <TableBody>
-//                   {ledger.map((l) => (
-//                     <TableRow key={l.id}>
-//                       <TableCell>{l.id}</TableCell>
-//                       <TableCell>{l.type}</TableCell>
-//                       <TableCell className={l.amount < 0 ? "text-destructive" : ""}>{formatINR.format(l.amount)}</TableCell>
-//                       <TableCell>{l.date}</TableCell>
-//                     </TableRow>
-//                   ))}
-//                 </TableBody>
-//               </Table>
-//             </CardContent>
-//           </Card>
-//         </TabsContent>
-//       </Tabs>
-//     </main>
-//   );
-// };
-
-// export default AdminPortal;
-
-
 import SEO from "@/components/SEO";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/../supabaseClient";
-import HotelMap from "@/components/HotelMap";
+import { 
+  Building, 
+  MapPin, 
+  Coffee, 
+  Sparkles, 
+  MessageSquare,
+  Plus,
+  Search,
+  Filter,
+  Edit,
+  Trash2,
+  CheckCircle,
+  Clock,
+  XCircle,
+  Star,
+  User,
+  Bed,
+  X,
+  Image
+} from "lucide-react";
 
-// Generate a BIGINT-safe numeric property_id: milliseconds * 1000 + 0-999
-// Stays below Number.MAX_SAFE_INTEGER (~9e15)
-const generateNumericPropertyId = (): number => (Date.now() * 1000) + Math.floor(Math.random() * 1000);
-
-// Matches your existing table columns
 interface Hotel {
- property_id: number; // BIGINT
- property_name: string;
- built_year: number | null;
- star_rating: number | null;
- pincode: string | null;
- property_type: string | null;
- free_wifi: boolean | null;
- entire_property: boolean | null;
- latitude: number | null;
- longitude: number | null;
- distance_from_center: number | null;
- town: string | null;
- state: string | null;
- uuid: string; // admin/user id (FK to profiles.id)
- address: string | null;
- created_at: string;
+  property_id: number;
+  property_name: string;
+  property_type: string;
+  star_rating: number;
+  address: string;
+  town: string;
+  state: string;
+  pincode: number;
+  latitude: number;
+  longitude: number;
+  free_wifi: boolean;
+  entire_property: boolean;
+  built_year?: number;
+  distance_from_center?: number;
+  admin_id?: string;
+  created_at: string;
+}
+
+interface Room {
+  id: number;
+  hotel_id: number;
+  room_type: string;
+  price: number;
+  booked_till?: string | null;
+  room_images?: string[] | null;
+  status?: 'available' | 'occupied' | 'maintenance';
+}
+
+interface RoomServiceOrder {
+  id: number;
+  booking_id: number;
+  user_id: string;
+  item_name: string;
+  preferred_time: string;
+  status: string;
+  total_amount: number;
+  created_at: string;
+  property_id: number;
+  profiles?: {
+    name: string;
+    email: string;
+  };
+  bookings?: {
+    rooms?: {
+      room_type: string;
+    };
+  };
+}
+
+interface HousekeepingRequest {
+  id: number;
+  booking_id: number;
+  user_id: string;
+  service_type: string;
+  preferred_time: string;
+  status: string;
+  created_at: string;
+  property_id: number;
+  profiles?: {
+    name: string;
+    email: string;
+  };
+  bookings?: {
+    rooms?: {
+      room_type: string;
+    };
+  };
+}
+
+interface Feedback {
+  id: number;
+  booking_id: number;
+  user_id: string;
+  rating: number;
+  comment: string;
+  created_at: string;
+  profiles?: {
+    name: string;
+    email: string;
+  };
+  bookings?: {
+    rooms?: {
+      room_type: string;
+      hotel_id: number;
+    };
+  };
 }
 
 const AdminPortal = () => {
- const { toast } = useToast();
- const [hotels, setHotels] = useState<Hotel[]>([]);
- const [loading, setLoading] = useState(true);
- const [hotelDialogOpen, setHotelDialogOpen] = useState(false);
- const [editing, setEditing] = useState<Hotel | null>(null);
- const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
- const [hotelToDelete, setHotelToDelete] = useState<Hotel | null>(null);
+  const { toast } = useToast();
+  const [user, setUser] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("hotels");
 
- // Minimal form matching your UI, mapped to DB columns on save
- const [form, setForm] = useState({
- name: "", // -> property_name
- location: "", // -> split into town, state (e.g., "Mumbai, Maharashtra")
- address: "", // -> address
- description: "", // not stored yet (add a column later if needed)
- latitude: "", // -> latitude
- longitude: "" // -> longitude
- });
+  // Hotels state
+  const [hotels, setHotels] = useState<Hotel[]>([]);
+  const [showHotelForm, setShowHotelForm] = useState(false);
+  const [hotelForm, setHotelForm] = useState({
+    property_name: "",
+    property_type: "",
+    star_rating: 3,
+    address: "",
+    town: "",
+    state: "",
+    pincode: "",
+    latitude: "",
+    longitude: "",
+    free_wifi: true,
+    entire_property: true
+  });
 
- const [isGeocoding, setIsGeocoding] = useState(false);
+  // Room management state
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedHotel, setSelectedHotel] = useState<Hotel | null>(null);
+  const [showRoomForm, setShowRoomForm] = useState(false);
+  const [roomForm, setRoomForm] = useState({
+    room_type: "",
+    price: "",
+    booked_till: "",
+    room_images: [] as string[],
+    status: "available" as "available" | "occupied" | "maintenance"
+  });
+  const [newImageUrl, setNewImageUrl] = useState("");
 
- useEffect(() => {
- fetchHotels();
- }, []);
+  // Room service state
+  const [roomServiceOrders, setRoomServiceOrders] = useState<RoomServiceOrder[]>([]);
+  const [roomServiceFilter, setRoomServiceFilter] = useState("all");
 
- // Function to automatically fetch coordinates from address
- const fetchCoordinates = async () => {
- if (!form.name || !form.location || !form.address) {
- toast({ 
- title: "Missing Information", 
- description: "Please fill in hotel name, location, and address first",
- variant: "destructive"
- });
- return;
- }
+  // Housekeeping state
+  const [housekeepingRequests, setHousekeepingRequests] = useState<HousekeepingRequest[]>([]);
+  const [housekeepingFilter, setHousekeepingFilter] = useState("all");
 
- setIsGeocoding(true);
- try {
- // Combine all location information for better geocoding
- const searchQuery = `${form.name}, ${form.address}, ${form.location}`;
- const encodedQuery = encodeURIComponent(searchQuery);
- 
- const response = await fetch(
- `https://nominatim.openstreetmap.org/search?format=json&q=${encodedQuery}&limit=1&addressdetails=1`
- );
- 
- if (!response.ok) throw new Error('Geocoding service unavailable');
- 
- const data = await response.json();
- 
- if (data && data.length > 0) {
- const result = data[0];
- setForm(prev => ({
- ...prev,
- latitude: result.lat,
- longitude: result.lon
- }));
- 
- toast({ 
- title: "Coordinates Found!", 
- description: `Location: ${result.lat}, ${result.lon}` 
- });
- } else {
- toast({ 
- title: "No coordinates found", 
- description: "Try being more specific with the address or enter coordinates manually",
- variant: "destructive"
- });
- }
- } catch (error) {
- console.error('Geocoding error:', error);
- toast({ 
- title: "Geocoding failed", 
- description: "Please enter coordinates manually or try again later",
- variant: "destructive"
- });
- } finally {
- setIsGeocoding(false);
- }
- };
+  // Feedback state
+  const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
 
- const fetchHotels = async () => {
- try {
- setLoading(true);
- const { data: { user }, error: userError } = await supabase.auth.getUser();
- if (userError || !user) throw new Error("Not authenticated");
+  // Fetch user data and admin hotels
+  useEffect(() => {
+    const fetchAdminData = async () => {
+      try {
+        const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
+        if (authError) throw authError;
+        if (!authUser) throw new Error('Not authenticated');
+        
+        setUser(authUser);
 
- const { data, error } = await supabase
- .from('hotel')
- .select('*')
- .eq('uuid', user.id)
- .order('created_at', { ascending: false });
+        // Fetch admin's hotels
+        const { data: hotelsData, error: hotelsError } = await supabase
+          .from('hotel')
+          .select('*')
+          .eq('admin_id', authUser.id)
+          .order('created_at', { ascending: false });
 
- if (error) throw error;
- setHotels((data as Hotel[]) || []);
- } catch (error: any) {
- console.error('Error fetching hotels:', error);
- toast({ title: "Error loading hotels", description: error.message || "Failed to load hotels", variant: "destructive" });
- } finally {
- setLoading(false);
- }
- };
+        if (hotelsError) throw hotelsError;
+        setHotels(hotelsData || []);
 
- const openAddDialog = () => {
- setEditing(null);
- setForm({ name: "", location: "", address: "", description: "", latitude: "", longitude: "" });
- setHotelDialogOpen(true);
- };
+        // If admin has hotels, fetch related data
+        if (hotelsData && hotelsData.length > 0) {
+          const hotelIds = hotelsData.map(h => h.property_id);
 
- const openEditDialog = (hotel: Hotel) => {
- setEditing(hotel);
- const loc = [hotel.town, hotel.state].filter(Boolean).join(", ");
- setForm({
- name: hotel.property_name || "",
- location: loc,
- address: hotel.address || "",
- description: "",
- latitude: hotel.latitude ? hotel.latitude.toString() : "",
- longitude: hotel.longitude ? hotel.longitude.toString() : ""
- });
- setHotelDialogOpen(true);
- };
+          // Fetch rooms for all hotels
+          const { data: roomsData, error: roomsError } = await supabase
+            .from('rooms')
+            .select('*')
+            .in('hotel_id', hotelIds)
+            .order('id', { ascending: true });
 
- const openDeleteDialog = (hotel: Hotel) => {
- setHotelToDelete(hotel);
- setDeleteDialogOpen(true);
- };
+          if (roomsError) throw roomsError;
+          setRooms(roomsData || []);
 
- const parseTownState = (location: string): { town: string | null; state: string | null } => {
- const parts = location.split(",").map(s => s.trim()).filter(Boolean);
- if (parts.length === 0) return { town: null, state: null };
- if (parts.length === 1) return { town: parts[0], state: null };
- return { town: parts[0], state: parts.slice(1).join(", ") };
- };
+          // Fetch room service orders
+          const { data: roomServiceData, error: roomServiceError } = await supabase
+            .from('room_service_orders')
+            .select(`
+              *,
+              profiles(name, email),
+              bookings(
+                rooms(room_type)
+              )
+            `)
+            .in('property_id', hotelIds)
+            .order('created_at', { ascending: false });
 
- const saveHotel = async () => {
- if (!form.name || !form.address) {
- toast({ title: "Validation Error", description: "Hotel name and address are required", variant: "destructive" });
- return;
- }
+          if (roomServiceError) throw roomServiceError;
+          setRoomServiceOrders(roomServiceData || []);
 
- try {
- const { data: { user }, error: userError } = await supabase.auth.getUser();
- if (userError || !user) throw new Error("Not authenticated");
+          // Fetch housekeeping requests
+          const { data: housekeepingData, error: housekeepingError } = await supabase
+            .from('housekeeping_requests')
+            .select(`
+              *,
+              profiles(name, email),
+              bookings(
+                rooms(room_type)
+              )
+            `)
+            .in('property_id', hotelIds)
+            .order('created_at', { ascending: false });
 
- const { town, state } = parseTownState(form.location);
- const latitude = form.latitude ? parseFloat(form.latitude) : null;
- const longitude = form.longitude ? parseFloat(form.longitude) : null;
+          if (housekeepingError) throw housekeepingError;
+          setHousekeepingRequests(housekeepingData || []);
 
- if (editing) {
- const { error } = await supabase
- .from('hotel')
- .update({
- property_name: form.name,
- town,
- state,
- address: form.address,
- latitude: latitude,
- longitude: longitude
- })
- .eq('property_id', editing.property_id)
- .eq('uuid', user.id);
+          // Fetch feedbacks
+            // hotelIds: number[] (e.g. [123, 456])
+            const { data: feedbackData, error: feedbackError } = await supabase
+            .from('feedback')
+            .select(`
+                *,
+                profiles(name, email)
+            `)
+            .in('property_id', hotelIds)
+            .order('created_at', { ascending: false });
 
- if (error) throw error;
- toast({ title: "Hotel updated successfully" });
- } else {
- const newPropertyId = generateNumericPropertyId();
- const { error } = await supabase
- .from('hotel')
- .insert([{
- property_id: newPropertyId,
- property_name: form.name,
- town,
- state,
- address: form.address,
- uuid: user.id, // link to admin (profiles.id)
- admin_id: user.id, // required for RLS policy
- latitude: latitude,
- longitude: longitude
- }]);
+            if (feedbackError) throw feedbackError;
+            setFeedbacks(feedbackData || []);
 
- if (error) throw error;
- toast({ title: "Hotel registered successfully" });
- }
+        }
 
- setHotelDialogOpen(false);
- fetchHotels();
- } catch (error: any) {
- console.error('Error saving hotel:', error);
- toast({ title: "Error saving hotel", description: error.message || "Failed to save hotel", variant: "destructive" });
- }
- };
+      } catch (error) {
+        console.error('Error fetching admin data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load admin data",
+          variant: "destructive"
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
 
- const handleDeleteHotel = async () => {
- if (!hotelToDelete) return;
- 
- try {
- const { data: { user }, error: userError } = await supabase.auth.getUser();
- if (userError || !user) throw new Error("Not authenticated");
+    fetchAdminData();
+  }, [toast]);
 
- const { error } = await supabase
- .from('hotel')
- .delete()
- .eq('property_id', hotelToDelete.property_id)
- .eq('uuid', user.id);
+  // Create new hotel
+  const handleCreateHotel = async () => {
+    if (!user) return;
 
- if (error) throw error;
- toast({ title: "Hotel deleted successfully" });
- setDeleteDialogOpen(false);
- setHotelToDelete(null);
- fetchHotels();
- } catch (error: any) {
- console.error('Error deleting hotel:', error);
- toast({ title: "Error deleting hotel", description: error.message || "Failed to delete hotel", variant: "destructive" });
- }
- };
+    try {
+      // Generate a unique property_id (in real app, you might want a better approach)
+      const property_id = Date.now();
 
- if (loading) {
- return (
- <main className="container mx-auto py-10">
- <div className="flex items-center justify-center h-64">
- <div className="text-center">
- <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
- <p className="text-muted-foreground">Loading hotels...</p>
- </div>
- </div>
- </main>
- );
- }
+      const { data, error } = await supabase
+        .from('hotel')
+        .insert({
+          property_id,
+          ...hotelForm,
+          pincode: parseInt(hotelForm.pincode),
+          latitude: parseFloat(hotelForm.latitude) || null,
+          longitude: parseFloat(hotelForm.longitude) || null,
+          admin_id: user.id
+        })
+        .select()
+        .single();
 
- return (
- <main className="container mx-auto py-10">
- <SEO title="Admin Portal | STAYSYNC" description="Manage hotels under your control." canonical="/admin" />
+      if (error) throw error;
 
- <div className="mb-8">
- <h1 className="text-3xl font-bold">Admin Portal</h1>
- <p className="mt-2 text-muted-foreground">Register hotels under your account. Data is linked to your admin id.</p>
- </div>
+      setHotels(prev => [data, ...prev]);
+      setShowHotelForm(false);
+      setHotelForm({
+        property_name: "",
+        property_type: "",
+        star_rating: 3,
+        address: "",
+        town: "",
+        state: "",
+        pincode: "",
+        latitude: "",
+        longitude: "",
+        free_wifi: true,
+        entire_property: true
+      });
 
- <Tabs defaultValue="hotels" className="mt-8">
- <TabsList>
- <TabsTrigger value="hotels">My Hotels</TabsTrigger>
- <TabsTrigger value="map">Map View</TabsTrigger>
- <TabsTrigger value="settings">Settings</TabsTrigger>
- </TabsList>
+      toast({
+        title: "Hotel created!",
+        description: `${hotelForm.property_name} has been added successfully.`
+      });
 
- <TabsContent value="hotels" className="space-y-4">
- <Card>
- <CardHeader className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
- <div>
- <CardTitle>Hotel Management</CardTitle>
- <CardDescription>Register new hotels and manage those under your control.</CardDescription>
- </div>
- <Dialog open={hotelDialogOpen} onOpenChange={setHotelDialogOpen}>
- <DialogTrigger asChild>
- <Button onClick={openAddDialog}>Register New Hotel</Button>
- </DialogTrigger>
- <DialogContent className="max-w-2xl">
- <DialogHeader>
- <DialogTitle>{editing ? "Edit Hotel" : "Register New Hotel"}</DialogTitle>
- <DialogDescription>
- {editing ? "Update hotel information" : "Add a new hotel to your portfolio"}
- </DialogDescription>
- </DialogHeader>
- <div className="grid gap-4">
- <div className="grid grid-cols-2 gap-4">
- <div className="space-y-2">
- <Label htmlFor="name">Hotel Name *</Label>
- <Input id="name" value={form.name} onChange={(e) => setForm(f => ({ ...f, name: e.target.value }))} placeholder="e.g., Grand Plaza Hotel" />
- </div>
- <div className="space-y-2">
- <Label htmlFor="location">Location *</Label>
- <Input id="location" value={form.location} onChange={(e) => setForm(f => ({ ...f, location: e.target.value }))} placeholder="e.g., Mumbai, Maharashtra" />
- </div>
- </div>
- 
- {/* Auto-fetch coordinates section */}
- <div className="space-y-3">
- <div className="flex items-center justify-between">
- <Label className="text-base font-medium">Coordinates</Label>
- <Button 
- type="button" 
- variant="outline" 
- size="sm"
- onClick={fetchCoordinates}
- disabled={isGeocoding || !form.name || !form.location || !form.address}
- className="text-xs"
- >
- {isGeocoding ? (
- <>
- <div className="animate-spin rounded-full h-3 w-3 border-b border-current mr-2"></div>
- Fetching...
- </>
- ) : (
- "🔍 Auto-fetch Coordinates"
- )}
- </Button>
- </div>
- <div className="text-xs text-muted-foreground bg-blue-50 p-3 rounded-md">
- 💡 <strong>Automatic:</strong> Click "Auto-fetch Coordinates" to get coordinates from your address, or enter them manually below.
- </div>
- <div className="grid grid-cols-2 gap-4">
- <div className="space-y-2">
- <Label htmlFor="latitude">Latitude</Label>
- <Input id="latitude" value={form.latitude} onChange={(e) => setForm(f => ({ ...f, latitude: e.target.value }))} placeholder="e.g., 19.0760" />
- </div>
- <div className="space-y-2">
- <Label htmlFor="longitude">Longitude</Label>
- <Input id="longitude" value={form.longitude} onChange={(e) => setForm(f => ({ ...f, longitude: e.target.value }))} placeholder="e.g., 72.8777" />
- </div>
- </div>
- </div>
- 
- <div className="space-y-2">
- <Label htmlFor="description">Description</Label>
- <Textarea id="description" value={form.description} onChange={(e) => setForm(f => ({ ...f, description: e.target.value }))} placeholder="Brief description (not stored yet)" rows={3} />
- </div>
- 
- <div className="space-y-2">
- <Label htmlFor="address">Full Address *</Label>
- <Textarea id="address" value={form.address} onChange={(e) => setForm(f => ({ ...f, address: e.target.value }))} placeholder="Complete street address" rows={3} />
- </div>
- <div className="flex justify-end gap-2 pt-4">
- <Button variant="outline" onClick={() => setHotelDialogOpen(false)}>Cancel</Button>
- <Button onClick={saveHotel}>{editing ? "Update Hotel" : "Register Hotel"}</Button>
- </div>
- </div>
- </DialogContent>
- </Dialog>
- </CardHeader>
- <CardContent>
- <Table>
- <TableHeader>
- <TableRow>
- <TableHead>Property</TableHead>
- <TableHead>Location</TableHead>
- <TableHead>Coordinates</TableHead>
- <TableHead>Address</TableHead>
- <TableHead>Created</TableHead>
- <TableHead className="text-right">Actions</TableHead>
- </TableRow>
- </TableHeader>
- <TableBody>
- {hotels.map((h) => (
- <TableRow key={h.property_id}>
- <TableCell>
- <div>
- <div className="font-medium">{h.property_name}</div>
- <div className="text-sm text-muted-foreground">{h.property_id}</div>
- </div>
- </TableCell>
- <TableCell>{[h.town, h.state].filter(Boolean).join(", ")}</TableCell>
- <TableCell>
- {h.latitude && h.longitude ? (
- <div className="text-xs font-mono">
- <div>{h.latitude.toFixed(4)}</div>
- <div>{h.longitude.toFixed(4)}</div>
- </div>
- ) : (
- <span className="text-muted-foreground text-xs">Not set</span>
- )}
- </TableCell>
- <TableCell className="max-w-xs truncate">{h.address}</TableCell>
- <TableCell className="text-sm text-muted-foreground">{new Date(h.created_at).toLocaleDateString()}</TableCell>
- <TableCell className="text-right space-x-2">
- <Button size="sm" variant="outline" onClick={() => openEditDialog(h)}>Edit</Button>
- <Button size="sm" variant="destructive" onClick={() => openDeleteDialog(h)}>Delete</Button>
- </TableCell>
- </TableRow>
- ))}
- {hotels.length === 0 && (
- <TableRow>
- <TableCell colSpan={6} className="text-center text-muted-foreground py-8">No hotels registered yet. Click "Register New Hotel" to get started.</TableCell>
- </TableRow>
- )}
- </TableBody>
- </Table>
- </CardContent>
- </Card>
- </TabsContent>
+    } catch (error) {
+      console.error('Error creating hotel:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create hotel",
+        variant: "destructive"
+      });
+    }
+  };
 
- <TabsContent value="map" className="space-y-4">
- <Card>
- <CardHeader>
- <CardTitle>Hotel Locations</CardTitle>
- <CardDescription>View all your hotels on an interactive map</CardDescription>
- </CardHeader>
- <CardContent>
- <HotelMap 
- hotels={hotels} 
- height="600px" 
- showAllHotels={true}
- />
- </CardContent>
- </Card>
- </TabsContent>
+  // Create new room
+  const handleCreateRoom = async () => {
+    if (!selectedHotel) return;
 
- <TabsContent value="settings" className="space-y-4">
- <Card>
- <CardHeader>
- <CardTitle>Admin Settings</CardTitle>
- <CardDescription>Manage your admin account and preferences</CardDescription>
- </CardHeader>
- <CardContent className="space-y-4">
- <div className="grid gap-4 md:grid-cols-2">
- <div className="space-y-2">
- <Label htmlFor="adminId">Admin ID</Label>
- <Input id="adminId" value="Current User" disabled />
- </div>
- <div className="space-y-2">
- <Label htmlFor="adminName">Admin Name</Label>
- <Input id="adminName" placeholder="Your Name" />
- </div>
- <div className="space-y-2">
- <Label htmlFor="adminEmail">Admin Email</Label>
- <Input id="adminEmail" type="email" placeholder="admin@staysync.com" />
- </div>
- <div className="space-y-2">
- <Label htmlFor="adminPhone">Admin Phone</Label>
- <Input id="adminPhone" placeholder="+91-XXXXXXXXXX" />
- </div>
- </div>
- <div className="flex justify-end">
- <Button>Save Settings</Button>
- </div>
- </CardContent>
- </Card>
- </TabsContent>
- </Tabs>
+    try {
+      const { data, error } = await supabase
+        .from('rooms')
+        .insert({
+          hotel_id: selectedHotel.property_id,
+          room_type: roomForm.room_type,
+          price: parseFloat(roomForm.price),
+          booked_till: roomForm.booked_till || null,
+          room_images: roomForm.room_images.length > 0 ? roomForm.room_images : null,
+          status: roomForm.status
+        })
+        .select()
+        .single();
 
- {/* Delete Confirmation Dialog */}
- <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
- <AlertDialogContent>
- <AlertDialogHeader>
- <AlertDialogTitle>Are you sure?</AlertDialogTitle>
- <AlertDialogDescription>
- This action cannot be undone. This will permanently delete the hotel "{hotelToDelete?.property_name}" 
- and remove it from your portfolio.
- </AlertDialogDescription>
- </AlertDialogHeader>
- <AlertDialogFooter>
- <AlertDialogCancel onClick={() => {
- setDeleteDialogOpen(false);
- setHotelToDelete(null);
- }}>
- Cancel
- </AlertDialogCancel>
- <AlertDialogAction onClick={handleDeleteHotel} className="bg-red-600 hover:bg-red-700">
- Delete Hotel
- </AlertDialogAction>
- </AlertDialogFooter>
- </AlertDialogContent>
- </AlertDialog>
- </main>
- );
+      if (error) throw error;
+
+      setRooms(prev => [data, ...prev]);
+      setShowRoomForm(false);
+      setRoomForm({
+        room_type: "",
+        price: "",
+        booked_till: "",
+        room_images: [],
+        status: "available"
+      });
+      setNewImageUrl("");
+
+      toast({
+        title: "Room created!",
+        description: `${roomForm.room_type} has been added to ${selectedHotel.property_name}.`
+      });
+
+    } catch (error) {
+      console.error('Error creating room:', error);
+      toast({
+        title: "Error",
+        description: "Failed to create room",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Delete room
+  const handleDeleteRoom = async (roomId: number) => {
+    try {
+      const { error } = await supabase
+        .from('rooms')
+        .delete()
+        .eq('id', roomId);
+
+      if (error) throw error;
+
+      setRooms(prev => prev.filter(room => room.id !== roomId));
+
+      toast({
+        title: "Room deleted!",
+        description: "Room has been removed successfully."
+      });
+
+    } catch (error) {
+      console.error('Error deleting room:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete room",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Add image URL to room images
+  const addImageUrl = () => {
+    if (newImageUrl.trim() && !roomForm.room_images.includes(newImageUrl.trim())) {
+      setRoomForm(prev => ({
+        ...prev,
+        room_images: [...prev.room_images, newImageUrl.trim()]
+      }));
+      setNewImageUrl("");
+    }
+  };
+
+  // Remove image URL from room images
+  const removeImageUrl = (imageUrl: string) => {
+    setRoomForm(prev => ({
+      ...prev,
+      room_images: prev.room_images.filter(url => url !== imageUrl)
+    }));
+  };
+
+  // Update room service order status
+  const updateRoomServiceStatus = async (orderId: number, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('room_service_orders')
+        .update({ status })
+        .eq('id', orderId);
+
+      if (error) throw error;
+
+      setRoomServiceOrders(prev => 
+        prev.map(order => 
+          order.id === orderId ? { ...order, status } : order
+        )
+      );
+
+      toast({
+        title: "Status updated!",
+        description: `Room service order marked as ${status}`
+      });
+
+    } catch (error) {
+      console.error('Error updating room service status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Update housekeeping request status
+  const updateHousekeepingStatus = async (requestId: number, status: string) => {
+    try {
+      const { error } = await supabase
+        .from('housekeeping_requests')
+        .update({ status })
+        .eq('id', requestId);
+
+      if (error) throw error;
+
+      setHousekeepingRequests(prev => 
+        prev.map(request => 
+          request.id === requestId ? { ...request, status } : request
+        )
+      );
+
+      toast({
+        title: "Status updated!",
+        description: `Housekeeping request marked as ${status}`
+      });
+
+    } catch (error) {
+      console.error('Error updating housekeeping status:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update status",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Filtered data
+  const filteredRoomServiceOrders = roomServiceOrders.filter(order => 
+    roomServiceFilter === "all" || order.status === roomServiceFilter
+  );
+
+  const filteredHousekeepingRequests = housekeepingRequests.filter(request => 
+    housekeepingFilter === "all" || request.status === housekeepingFilter
+  );
+
+  // Get rooms for selected hotel
+  const hotelRooms = selectedHotel 
+    ? rooms.filter(room => room.hotel_id === selectedHotel.property_id)
+    : [];
+
+  if (loading) {
+    return (
+      <div className="container mx-auto py-10" style={{ backgroundColor: '#FAF8F1', minHeight: '100vh' }}>
+        <div className="flex flex-col items-center justify-center h-[60vh]">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4" style={{ borderColor: '#34656D' }}></div>
+          <p style={{ color: '#334443' }}>Loading admin portal...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <main className="container mx-auto py-8 px-4" style={{ backgroundColor: '#FAF8F1', minHeight: '100vh' }}>
+      <SEO
+        title="Admin Portal"
+        description="Manage hotels, view requests, and monitor feedback."
+        canonical="/admin"
+      />
+
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob" style={{ backgroundColor: '#34656D' }}></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000" style={{ backgroundColor: '#334443' }}></div>
+        <div className="absolute top-1/2 left-1/4 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" style={{ backgroundColor: '#FAEAB1' }}></div>
+      </div>
+
+      <div className="relative z-10">
+        {/* Header Section */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-2xl shadow-lg" style={{ backgroundColor: '#34656D' }}>
+              <Building className="w-8 h-8" style={{ color: '#FAF8F1' }} />
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold" style={{ color: '#334443' }}>Admin Portal</h1>
+              <p className="mt-1 text-lg" style={{ color: '#34656D' }}>Manage your hotels and services</p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full shadow-sm" style={{ backgroundColor: '#FAEAB1' }}>
+            <User className="w-5 h-5" style={{ color: '#334443' }} />
+            <span className="text-sm font-medium" style={{ color: '#334443' }}>{user?.email}</span>
+          </div>
+        </div>
+
+        {/* Stats Overview */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium" style={{ color: '#34656D' }}>Total Hotels</p>
+                  <h3 className="text-2xl font-bold mt-1" style={{ color: '#334443' }}>{hotels.length}</h3>
+                </div>
+                <div className="p-3 rounded-xl" style={{ backgroundColor: '#FAEAB1' }}>
+                  <Building className="w-6 h-6" style={{ color: '#34656D' }} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium" style={{ color: '#34656D' }}>Total Rooms</p>
+                  <h3 className="text-2xl font-bold mt-1" style={{ color: '#334443' }}>{rooms.length}</h3>
+                </div>
+                <div className="p-3 rounded-xl" style={{ backgroundColor: '#FAEAB1' }}>
+                  <Bed className="w-6 h-6" style={{ color: '#34656D' }} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium" style={{ color: '#34656D' }}>Pending Requests</p>
+                  <h3 className="text-2xl font-bold mt-1" style={{ color: '#334443' }}>
+                    {roomServiceOrders.filter(o => o.status === 'pending').length + 
+                     housekeepingRequests.filter(h => h.status === 'pending').length}
+                  </h3>
+                </div>
+                <div className="p-3 rounded-xl" style={{ backgroundColor: '#FAEAB1' }}>
+                  <Clock className="w-6 h-6" style={{ color: '#34656D' }} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="border-0 shadow-lg bg-white/90 backdrop-blur-sm">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium" style={{ color: '#34656D' }}>Avg Rating</p>
+                  <h3 className="text-2xl font-bold mt-1" style={{ color: '#334443' }}>
+                    {feedbacks.length > 0 
+                      ? (feedbacks.reduce((acc, fb) => acc + fb.rating, 0) / feedbacks.length).toFixed(1)
+                      : '0.0'
+                    }
+                  </h3>
+                </div>
+                <div className="p-3 rounded-xl" style={{ backgroundColor: '#FAEAB1' }}>
+                  <Star className="w-6 h-6" style={{ color: '#34656D' }} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
+          <TabsList className="grid grid-cols-2 md:grid-cols-5 gap-3 p-2 h-auto rounded-2xl" style={{ backgroundColor: '#FAEAB1' }}>
+            <TabsTrigger 
+              value="hotels" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <Building className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Hotels</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+              value="maps" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <MapPin className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Maps</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+              value="room-service" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <Coffee className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Room Service</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+              value="housekeeping" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <Sparkles className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Housekeeping</span>
+            </TabsTrigger>
+
+            <TabsTrigger 
+              value="feedback" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <MessageSquare className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Feedback</span>
+            </TabsTrigger>
+          </TabsList>
+
+          {/* Hotels Tab */}
+          <TabsContent value="hotels" className="space-y-6 mt-6">
+            <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+              <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                      <Building className="w-6 h-6" style={{ color: '#34656D' }} />
+                      Hotel Management
+                    </CardTitle>
+                    <CardDescription style={{ color: '#34656D' }}>
+                      Manage your hotel properties and details
+                    </CardDescription>
+                  </div>
+                  <Button 
+                    onClick={() => setShowHotelForm(true)}
+                    className="transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                    style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Hotel
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {showHotelForm ? (
+                  <div className="space-y-6 p-6 border-2 rounded-2xl mb-6" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                    <h3 className="text-xl font-bold" style={{ color: '#334443' }}>Add New Hotel</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Property Name</label>
+                        <Input 
+                          value={hotelForm.property_name}
+                          onChange={(e) => setHotelForm(prev => ({ ...prev, property_name: e.target.value }))}
+                          placeholder="Enter property name"
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Property Type</label>
+                        <Select 
+                          value={hotelForm.property_type} 
+                          onValueChange={(value) => setHotelForm(prev => ({ ...prev, property_type: value }))}
+                        >
+                          <SelectTrigger className="rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
+                            <SelectValue placeholder="Select type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Hotel">Hotel</SelectItem>
+                            <SelectItem value="Resort">Resort</SelectItem>
+                            <SelectItem value="Motel">Motel</SelectItem>
+                            <SelectItem value="Guest House">Guest House</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Star Rating</label>
+                        <Select 
+                          value={hotelForm.star_rating.toString()} 
+                          onValueChange={(value) => setHotelForm(prev => ({ ...prev, star_rating: parseInt(value) }))}
+                        >
+                          <SelectTrigger className="rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
+                            <SelectValue placeholder="Select rating" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <SelectItem key={star} value={star.toString()}>
+                                {star} Star{star > 1 ? 's' : ''}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Pincode</label>
+                        <Input 
+                          value={hotelForm.pincode}
+                          onChange={(e) => setHotelForm(prev => ({ ...prev, pincode: e.target.value }))}
+                          placeholder="Enter pincode"
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Town/City</label>
+                        <Input 
+                          value={hotelForm.town}
+                          onChange={(e) => setHotelForm(prev => ({ ...prev, town: e.target.value }))}
+                          placeholder="Enter town/city"
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>State</label>
+                        <Input 
+                          value={hotelForm.state}
+                          onChange={(e) => setHotelForm(prev => ({ ...prev, state: e.target.value }))}
+                          placeholder="Enter state"
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Latitude</label>
+                        <Input 
+                          value={hotelForm.latitude}
+                          onChange={(e) => setHotelForm(prev => ({ ...prev, latitude: e.target.value }))}
+                          placeholder="Enter latitude"
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Longitude</label>
+                        <Input 
+                          value={hotelForm.longitude}
+                          onChange={(e) => setHotelForm(prev => ({ ...prev, longitude: e.target.value }))}
+                          placeholder="Enter longitude"
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <div className="md:col-span-2">
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Address</label>
+                        <Textarea 
+                          value={hotelForm.address}
+                          onChange={(e) => setHotelForm(prev => ({ ...prev, address: e.target.value }))}
+                          placeholder="Enter full address"
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <Button 
+                        onClick={handleCreateHotel}
+                        disabled={!hotelForm.property_name || !hotelForm.property_type}
+                        className="transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                        style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                      >
+                        Create Hotel
+                      </Button>
+                      <Button 
+                        onClick={() => setShowHotelForm(false)}
+                        variant="outline"
+                        className="transition-all duration-300"
+                        style={{ borderColor: '#34656D', color: '#34656D' }}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : null}
+
+                {hotels.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Building className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                    <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No hotels yet</h3>
+                    <p style={{ color: '#34656D' }}>Add your first hotel property to get started</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {hotels.map(hotel => (
+                      <div key={hotel.property_id} className="p-6 border rounded-2xl transition-all duration-300 hover:shadow-lg" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h4 className="font-bold text-xl mb-2" style={{ color: '#334443' }}>{hotel.property_name}</h4>
+                            <div className="flex items-center gap-4 flex-wrap">
+                              <Badge className="px-3 py-1 rounded-full" style={{ backgroundColor: '#FAEAB1', color: '#334443' }}>
+                                {hotel.property_type}
+                              </Badge>
+                              <div className="flex items-center gap-1">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star 
+                                    key={i} 
+                                    className={`w-4 h-4 ${i < hotel.star_rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                                  />
+                                ))}
+                              </div>
+                              <span style={{ color: '#34656D' }}>{hotel.town}, {hotel.state}</span>
+                            </div>
+                          </div>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              style={{ borderColor: '#34656D', color: '#34656D' }}
+                              onClick={() => {
+                                setSelectedHotel(hotel);
+                                setShowRoomForm(true);
+                              }}
+                            >
+                              <Edit className="w-4 h-4" />
+                            </Button>
+                            <Button size="sm" variant="outline" style={{ borderColor: '#34656D', color: '#34656D' }}>
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        <p className="text-sm mb-3" style={{ color: '#334443' }}>{hotel.address}</p>
+                        <div className="flex items-center gap-4 text-sm">
+                          {hotel.free_wifi && (
+                            <Badge variant="outline" style={{ borderColor: '#34656D', color: '#34656D' }}>
+                              Free WiFi
+                            </Badge>
+                          )}
+                          {hotel.entire_property && (
+                            <Badge variant="outline" style={{ borderColor: '#34656D', color: '#34656D' }}>
+                              Entire Property
+                            </Badge>
+                          )}
+                          {hotel.latitude && hotel.longitude && (
+                            <Badge variant="outline" style={{ borderColor: '#34656D', color: '#34656D' }}>
+                              Location Set
+                            </Badge>
+                          )}
+                          <Badge variant="outline" style={{ borderColor: '#34656D', color: '#34656D' }}>
+                            {rooms.filter(room => room.hotel_id === hotel.property_id).length} Rooms
+                          </Badge>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Maps Tab */}
+          <TabsContent value="maps" className="space-y-6 mt-6">
+            <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+              <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                  <MapPin className="w-6 h-6" style={{ color: '#34656D' }} />
+                  Hotel Locations
+                </CardTitle>
+                <CardDescription style={{ color: '#34656D' }}>
+                  View your hotel properties on the map
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {hotels.length === 0 ? (
+                  <div className="text-center py-12">
+                    <MapPin className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                    <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No hotels to display</h3>
+                    <p style={{ color: '#34656D' }}>Add hotels with location data to see them on the map</p>
+                  </div>
+                ) : hotels.filter(h => h.latitude && h.longitude).length === 0 ? (
+                  <div className="text-center py-12">
+                    <MapPin className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                    <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No location data</h3>
+                    <p style={{ color: '#34656D' }}>Add latitude and longitude coordinates to your hotels to view them on the map</p>
+                  </div>
+                ) : (
+                  <div className="border-2 rounded-2xl p-6 h-96 flex items-center justify-center" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                    <div className="text-center">
+                      <MapPin className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>OpenStreetMap Integration</h3>
+                      <p style={{ color: '#34656D' }} className="mb-4">
+                        {hotels.filter(h => h.latitude && h.longitude).length} hotel(s) with location data
+                      </p>
+                      <p className="text-sm" style={{ color: '#34656D' }}>
+                        In a production environment, this would display an interactive map<br />
+                        showing all your hotel locations using OpenStreetMap.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Hotels list with coordinates */}
+                {hotels.filter(h => h.latitude && h.longitude).length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="font-semibold mb-4 text-lg" style={{ color: '#334443' }}>Hotels with Coordinates</h4>
+                    <div className="space-y-3">
+                      {hotels.filter(h => h.latitude && h.longitude).map(hotel => (
+                        <div key={hotel.property_id} className="p-4 border rounded-xl" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                          <div className="flex justify-between items-center">
+                            <div>
+                              <h5 className="font-medium" style={{ color: '#334443' }}>{hotel.property_name}</h5>
+                              <p className="text-sm" style={{ color: '#34656D' }}>
+                                Lat: {hotel.latitude}, Lng: {hotel.longitude}
+                              </p>
+                            </div>
+                            <Badge style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}>
+                              {hotel.town}, {hotel.state}
+                            </Badge>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Room Service Tab */}
+          <TabsContent value="room-service" className="space-y-6 mt-6">
+            <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+              <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                      <Coffee className="w-6 h-6" style={{ color: '#34656D' }} />
+                      Room Service Requests
+                    </CardTitle>
+                    <CardDescription style={{ color: '#34656D' }}>
+                      Manage room service orders from guests
+                    </CardDescription>
+                  </div>
+                  <Select value={roomServiceFilter} onValueChange={setRoomServiceFilter}>
+                    <SelectTrigger className="w-32 rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
+                      <SelectValue placeholder="Filter" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {roomServiceOrders.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Coffee className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                    <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No room service requests</h3>
+                    <p style={{ color: '#34656D' }}>Room service orders will appear here when guests make requests</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredRoomServiceOrders.map(order => (
+                      <div key={order.id} className="p-6 border rounded-2xl transition-all duration-300 hover:shadow-lg" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h4 className="font-bold text-lg mb-2" style={{ color: '#334443' }}>{order.item_name}</h4>
+                            <div className="space-y-1 text-sm">
+                              <p style={{ color: '#34656D' }}>
+                                <strong>Guest:</strong> {order.profiles?.name || 'Unknown'} ({order.profiles?.email})
+                              </p>
+                              <p style={{ color: '#34656D' }}>
+                                <strong>Room Type:</strong> {order.bookings?.rooms?.room_type || 'Unknown'}
+                              </p>
+                              <p style={{ color: '#34656D' }}>
+                                <strong>Preferred Time:</strong> {order.preferred_time}
+                              </p>
+                              <p style={{ color: '#34656D' }}>
+                                <strong>Amount:</strong> ₹{order.total_amount}
+                              </p>
+                              <p style={{ color: '#34656D' }}>
+                                <strong>Requested:</strong> {new Date(order.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge className="px-3 py-1 rounded-full font-medium" style={{ 
+                              backgroundColor: order.status === 'completed' ? '#34656D' : 
+                                order.status === 'in-progress' ? '#FAEAB1' : '#33444320',
+                              color: order.status === 'completed' ? '#FAF8F1' : '#334443'
+                            }}>
+                              {order.status}
+                            </Badge>
+                            <div className="flex gap-2">
+                              {order.status !== 'completed' && (
+                                <Button 
+                                  size="sm"
+                                  onClick={() => updateRoomServiceStatus(order.id, 'completed')}
+                                  className="transition-all duration-300"
+                                  style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  Complete
+                                </Button>
+                              )}
+                              {order.status === 'pending' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => updateRoomServiceStatus(order.id, 'in-progress')}
+                                  style={{ borderColor: '#34656D', color: '#34656D' }}
+                                >
+                                  <Clock className="w-4 h-4 mr-1" />
+                                  Start
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Housekeeping Tab */}
+          <TabsContent value="housekeeping" className="space-y-6 mt-6">
+            <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+              <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+              <CardHeader className="pb-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                      <Sparkles className="w-6 h-6" style={{ color: '#34656D' }} />
+                      Housekeeping Requests
+                    </CardTitle>
+                    <CardDescription style={{ color: '#34656D' }}>
+                      Manage housekeeping and maintenance requests
+                    </CardDescription>
+                  </div>
+                  <Select value={housekeepingFilter} onValueChange={setHousekeepingFilter}>
+                    <SelectTrigger className="w-32 rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
+                      <SelectValue placeholder="Filter" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {housekeepingRequests.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Sparkles className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                    <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No housekeeping requests</h3>
+                    <p style={{ color: '#34656D' }}>Housekeeping requests will appear here when guests make requests</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {filteredHousekeepingRequests.map(request => (
+                      <div key={request.id} className="p-6 border rounded-2xl transition-all duration-300 hover:shadow-lg" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                        <div className="flex justify-between items-start mb-4">
+                          <div>
+                            <h4 className="font-bold text-lg mb-2 capitalize" style={{ color: '#334443' }}>{request.service_type}</h4>
+                            <div className="space-y-1 text-sm">
+                              <p style={{ color: '#34656D' }}>
+                                <strong>Guest:</strong> {request.profiles?.name || 'Unknown'} ({request.profiles?.email})
+                              </p>
+                              <p style={{ color: '#34656D' }}>
+                                <strong>Room Type:</strong> {request.bookings?.rooms?.room_type || 'Unknown'}
+                              </p>
+                              <p style={{ color: '#34656D' }}>
+                                <strong>Preferred Time:</strong> {new Date(request.preferred_time).toLocaleString()}
+                              </p>
+                              <p style={{ color: '#34656D' }}>
+                                <strong>Requested:</strong> {new Date(request.created_at).toLocaleDateString()}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex flex-col items-end gap-2">
+                            <Badge className="px-3 py-1 rounded-full font-medium" style={{ 
+                              backgroundColor: request.status === 'completed' ? '#34656D' : 
+                                request.status === 'in-progress' ? '#FAEAB1' : '#33444320',
+                              color: request.status === 'completed' ? '#FAF8F1' : '#334443'
+                            }}>
+                              {request.status}
+                            </Badge>
+                            <div className="flex gap-2">
+                              {request.status !== 'completed' && (
+                                <Button 
+                                  size="sm"
+                                  onClick={() => updateHousekeepingStatus(request.id, 'completed')}
+                                  className="transition-all duration-300"
+                                  style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                                >
+                                  <CheckCircle className="w-4 h-4 mr-1" />
+                                  Complete
+                                </Button>
+                              )}
+                              {request.status === 'pending' && (
+                                <Button 
+                                  size="sm" 
+                                  variant="outline"
+                                  onClick={() => updateHousekeepingStatus(request.id, 'in-progress')}
+                                  style={{ borderColor: '#34656D', color: '#34656D' }}
+                                >
+                                  <Clock className="w-4 h-4 mr-1" />
+                                  Start
+                                </Button>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Feedback Tab */}
+          <TabsContent value="feedback" className="space-y-6 mt-6">
+            <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+              <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                  <MessageSquare className="w-6 h-6" style={{ color: '#34656D' }} />
+                  Guest Feedback
+                </CardTitle>
+                <CardDescription style={{ color: '#34656D' }}>
+                  Reviews and feedback from your guests
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {feedbacks.length === 0 ? (
+                  <div className="text-center py-12">
+                    <MessageSquare className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                    <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No feedback yet</h3>
+                    <p style={{ color: '#34656D' }}>Guest feedback will appear here once they submit reviews</p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {/* Feedback Summary */}
+                    <div className="p-6 border-2 rounded-2xl" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                      <h4 className="font-bold text-lg mb-4" style={{ color: '#334443' }}>Feedback Summary</h4>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center">
+                          <p className="text-2xl font-bold" style={{ color: '#334443' }}>{feedbacks.length}</p>
+                          <p className="text-sm" style={{ color: '#34656D' }}>Total Reviews</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold" style={{ color: '#334443' }}>
+                            {(feedbacks.reduce((acc, fb) => acc + fb.rating, 0) / feedbacks.length).toFixed(1)}
+                          </p>
+                          <p className="text-sm" style={{ color: '#34656D' }}>Average Rating</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold" style={{ color: '#334443' }}>
+                            {feedbacks.filter(fb => fb.rating >= 4).length}
+                          </p>
+                          <p className="text-sm" style={{ color: '#34656D' }}>Positive Reviews</p>
+                        </div>
+                        <div className="text-center">
+                          <p className="text-2xl font-bold" style={{ color: '#334443' }}>
+                            {feedbacks.filter(fb => fb.rating <= 2).length}
+                          </p>
+                          <p className="text-sm" style={{ color: '#34656D' }}>Needs Improvement</p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Feedback List */}
+                    <div className="space-y-4">
+                      {feedbacks.map(feedback => (
+                        <div key={feedback.id} className="p-6 border rounded-2xl transition-all duration-300 hover:shadow-lg" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h4 className="font-bold text-lg mb-2" style={{ color: '#334443' }}>
+                                {feedback.profiles?.name || 'Anonymous Guest'}
+                              </h4>
+                              <div className="flex items-center gap-4 flex-wrap">
+                                <div className="flex gap-1">
+                                  {[1, 2, 3, 4, 5].map((star) => (
+                                    <Star 
+                                      key={star} 
+                                      className={`w-5 h-5 ${star <= feedback.rating ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300'}`} 
+                                    />
+                                  ))}
+                                </div>
+                                <span className="text-sm" style={{ color: '#34656D' }}>
+                                  {new Date(feedback.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                            <Badge style={{ backgroundColor: 
+                              feedback.rating >= 4 ? '#34656D' : 
+                              feedback.rating >= 3 ? '#FAEAB1' : '#33444320',
+                              color: feedback.rating >= 4 ? '#FAF8F1' : '#334443'
+                            }}>
+                              {feedback.rating >= 4 ? 'Excellent' : feedback.rating >= 3 ? 'Good' : 'Needs Improvement'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm leading-relaxed" style={{ color: '#334443' }}>
+                            {feedback.comment}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+
+      {/* Room Management Modal */}
+      {showRoomForm && selectedHotel && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-2xl font-bold" style={{ color: '#334443' }}>
+                  Manage Rooms - {selectedHotel.property_name}
+                </h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowRoomForm(false);
+                    setSelectedHotel(null);
+                    setRoomForm({
+                      room_type: "",
+                      price: "",
+                      booked_till: "",
+                      room_images: [],
+                      status: "available"
+                    });
+                    setNewImageUrl("");
+                  }}
+                  style={{ color: '#34656D' }}
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+
+              {/* Add Room Form */}
+              <div className="space-y-6 mb-8 p-4 border-2 rounded-xl" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                <h3 className="text-lg font-semibold" style={{ color: '#334443' }}>Add New Room</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Room Type</label>
+                    <Input 
+                      value={roomForm.room_type}
+                      onChange={(e) => setRoomForm(prev => ({ ...prev, room_type: e.target.value }))}
+                      placeholder="e.g., Deluxe Suite, Standard Room"
+                      className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                      style={{ borderColor: '#FAEAB1' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Price per Night (₹)</label>
+                    <Input 
+                      type="number"
+                      value={roomForm.price}
+                      onChange={(e) => setRoomForm(prev => ({ ...prev, price: e.target.value }))}
+                      placeholder="Enter price"
+                      className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                      style={{ borderColor: '#FAEAB1' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Booked Till (Optional)</label>
+                    <Input 
+                      type="date"
+                      value={roomForm.booked_till}
+                      onChange={(e) => setRoomForm(prev => ({ ...prev, booked_till: e.target.value }))}
+                      className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                      style={{ borderColor: '#FAEAB1' }}
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Status</label>
+                    <Select 
+                      value={roomForm.status} 
+                      onValueChange={(value: "available" | "occupied" | "maintenance") => 
+                        setRoomForm(prev => ({ ...prev, status: value }))
+                      }
+                    >
+                      <SelectTrigger className="rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
+                        <SelectValue placeholder="Select status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="available">Available</SelectItem>
+                        <SelectItem value="occupied">Occupied</SelectItem>
+                        <SelectItem value="maintenance">Maintenance</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="md:col-span-2">
+                    <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Room Images (URLs)</label>
+                    <div className="space-y-2">
+                      <div className="flex gap-2">
+                        <Input 
+                          value={newImageUrl}
+                          onChange={(e) => setNewImageUrl(e.target.value)}
+                          placeholder="Enter image URL"
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                        <Button 
+                          onClick={addImageUrl}
+                          disabled={!newImageUrl.trim()}
+                          style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                        >
+                          <Plus className="w-4 h-4" />
+                        </Button>
+                      </div>
+                      {roomForm.room_images.length > 0 && (
+                        <div className="space-y-2">
+                          {roomForm.room_images.map((url, index) => (
+                            <div key={index} className="flex items-center gap-2 p-2 rounded-lg" style={{ backgroundColor: '#FAEAB1' }}>
+                              <Image className="w-4 h-4" style={{ color: '#34656D' }} />
+                              <span className="text-sm flex-1 truncate" style={{ color: '#334443' }}>{url}</span>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => removeImageUrl(url)}
+                                style={{ color: '#34656D' }}
+                              >
+                                <X className="w-4 h-4" />
+                              </Button>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <Button 
+                  onClick={handleCreateRoom}
+                  disabled={!roomForm.room_type || !roomForm.price}
+                  className="w-full transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                  style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Room
+                </Button>
+              </div>
+
+              {/* Existing Rooms List */}
+              <div>
+                <h3 className="text-lg font-semibold mb-4" style={{ color: '#334443' }}>Existing Rooms</h3>
+                {hotelRooms.length === 0 ? (
+                  <div className="text-center py-8 border-2 rounded-xl" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                    <Bed className="w-12 h-12 mx-auto mb-4" style={{ color: '#34656D' }} />
+                    <p style={{ color: '#34656D' }}>No rooms added yet. Add your first room above.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {hotelRooms.map(room => (
+                      <div key={room.id} className="p-4 border rounded-xl flex justify-between items-center" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                        <div>
+                          <h4 className="font-semibold" style={{ color: '#334443' }}>{room.room_type}</h4>
+                          <div className="flex items-center gap-4 mt-1">
+                            <span className="text-sm" style={{ color: '#34656D' }}>₹{room.price}/night</span>
+                            <Badge style={{ 
+                              backgroundColor: room.status === 'available' ? '#34656D' : 
+                                room.status === 'occupied' ? '#FAEAB1' : '#33444320',
+                              color: room.status === 'available' ? '#FAF8F1' : '#334443'
+                            }}>
+                              {room.status}
+                            </Badge>
+                            {room.booked_till && (
+                              <span className="text-xs" style={{ color: '#34656D' }}>
+                                Booked till: {new Date(room.booked_till).toLocaleDateString()}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteRoom(room.id)}
+                          style={{ borderColor: '#34656D', color: '#34656D' }}
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes blob {
+          0% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
+    </main>
+  );
 };
 
 export default AdminPortal;
-
