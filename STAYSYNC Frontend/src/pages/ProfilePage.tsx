@@ -360,14 +360,14 @@ const Profile = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-        <div className="text-center p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg border border-white/20">
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: '#FAF8F1' }}>
+        <div className="text-center p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg border" style={{ borderColor: '#FAEAB1' }}>
           <div className="relative inline-block mb-6">
-            <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
-            <div className="absolute inset-0 bg-gradient-to-r from-indigo-400 to-purple-500 rounded-full opacity-20 animate-pulse"></div>
+            <Loader2 className="h-12 w-12 animate-spin" style={{ color: '#34656D' }} />
+            <div className="absolute inset-0 rounded-full opacity-20 animate-pulse" style={{ backgroundColor: '#34656D' }}></div>
           </div>
-          <p className="text-lg font-medium text-gray-700">Loading your profile...</p>
-          <p className="text-sm text-gray-500 mt-2">Just a moment while we prepare your experience</p>
+          <p className="text-lg font-medium" style={{ color: '#334443' }}>Loading your profile...</p>
+          <p className="text-sm mt-2" style={{ color: '#34656D' }}>Just a moment while we prepare your experience</p>
         </div>
       </div>
     );
@@ -375,17 +375,18 @@ const Profile = () => {
 
   if (!user || !profile) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50">
-        <div className="text-center p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg border border-white/20">
+      <div className="flex items-center justify-center min-h-screen" style={{ backgroundColor: '#FAF8F1' }}>
+        <div className="text-center p-8 rounded-2xl bg-white/80 backdrop-blur-sm shadow-lg border" style={{ borderColor: '#FAEAB1' }}>
           <div className="mb-6">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-red-100 to-pink-100 rounded-full mb-4">
-              <X className="h-8 w-8 text-red-500" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full mb-4" style={{ backgroundColor: '#FAEAB1' }}>
+              <X className="h-8 w-8" style={{ color: '#34656D' }} />
             </div>
           </div>
-          <p className="text-lg font-medium text-gray-700 mb-4">Failed to load profile data</p>
+          <p className="text-lg font-medium mb-4" style={{ color: '#334443' }}>Failed to load profile data</p>
           <Button 
             onClick={() => window.location.reload()}
-            className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+            className="transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+            style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
           >
             Try Again
           </Button>
@@ -395,7 +396,7 @@ const Profile = () => {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
+    <main className="min-h-screen py-8 px-4" style={{ backgroundColor: '#FAF8F1' }}>
       <SEO
         title="Profile | STAYSYNC"
         description="Manage your STAYSYNC profile and settings."
@@ -404,29 +405,29 @@ const Profile = () => {
 
       {/* Animated background elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-purple-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-indigo-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000"></div>
-        <div className="absolute top-1/2 left-1/4 w-80 h-80 bg-pink-200 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob" style={{ backgroundColor: '#34656D' }}></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000" style={{ backgroundColor: '#334443' }}></div>
+        <div className="absolute top-1/2 left-1/4 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" style={{ backgroundColor: '#FAEAB1' }}></div>
       </div>
 
       <div className="container mx-auto max-w-4xl relative z-10">
         <div className="space-y-8">
           {/* Header */}
           <div className="text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-full mb-4 shadow-lg">
-              <User className="h-10 w-10 text-white" />
+            <div className="inline-flex items-center justify-center w-20 h-20 rounded-full mb-4 shadow-lg" style={{ backgroundColor: '#34656D' }}>
+              <User className="h-10 w-10" style={{ color: '#FAF8F1' }} />
             </div>
-            <h1 className="text-4xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl font-bold" style={{ color: '#334443' }}>
               My Profile
             </h1>
-            <p className="text-muted-foreground mt-2 max-w-md mx-auto">
+            <p className="mt-2 max-w-md mx-auto" style={{ color: '#34656D' }}>
               Manage your account settings and personalize your experience
             </p>
             
             {/* Decorative elements */}
             <div className="flex justify-center mt-4 space-x-2">
               {[1, 2, 3].map((i) => (
-                <div key={i} className="w-2 h-2 bg-indigo-300 rounded-full animate-pulse" style={{ animationDelay: `${i * 0.2}s` }}></div>
+                <div key={i} className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: '#34656D', animationDelay: `${i * 0.2}s` }}></div>
               ))}
             </div>
           </div>
@@ -434,16 +435,16 @@ const Profile = () => {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Profile Picture Card */}
             <Card className="lg:col-span-1 border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
-              <div className="h-2 bg-gradient-to-r from-indigo-400 to-purple-500"></div>
+              <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center gap-2 text-indigo-700">
-                  <Camera className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2" style={{ color: '#334443' }}>
+                  <Camera className="h-5 w-5" style={{ color: '#34656D' }} />
                   Profile Picture
                 </CardTitle>
               </CardHeader>
               <CardContent className="flex flex-col items-center space-y-4">
                 <div className="relative">
-                  <div className="relative w-32 h-32 rounded-full overflow-hidden bg-gradient-to-br from-indigo-100 to-purple-100 flex items-center justify-center border-4 border-white shadow-lg">
+                  <div className="relative w-32 h-32 rounded-full overflow-hidden flex items-center justify-center border-4 border-white shadow-lg" style={{ backgroundColor: '#FAEAB1' }}>
                     {profileImageUrl ? (
                       <img
                         src={profileImageUrl}
@@ -455,10 +456,10 @@ const Profile = () => {
                         }}
                       />
                     ) : (
-                      <User className="h-16 w-16 text-indigo-400" />
+                      <User className="h-16 w-16" style={{ color: '#34656D' }} />
                     )}
                     {!profileImageUrl && (
-                      <User className="h-16 w-16 text-indigo-400" style={{ display: 'flex' }} />
+                      <User className="h-16 w-16" style={{ color: '#34656D', display: 'flex' }} />
                     )}
                   </div>
                   {isUploadingImage && (
@@ -466,7 +467,7 @@ const Profile = () => {
                       <Loader2 className="h-8 w-8 animate-spin text-white" />
                     </div>
                   )}
-                  <div className="absolute -bottom-1 -right-1 w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full flex items-center justify-center shadow-md border-2 border-white">
+                  <div className="absolute -bottom-1 -right-1 w-10 h-10 rounded-full flex items-center justify-center shadow-md border-2 border-white" style={{ backgroundColor: '#34656D' }}>
                     <Palette className="h-5 w-5 text-white" />
                   </div>
                 </div>
@@ -475,7 +476,8 @@ const Profile = () => {
                   <Button
                     onClick={() => fileInputRef.current?.click()}
                     disabled={isUploadingImage}
-                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+                    className="w-full transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+                    style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
                   >
                     <Upload className="h-4 w-4 mr-2" />
                     {isUploadingImage ? "Uploading..." : "Change Picture"}
@@ -487,7 +489,7 @@ const Profile = () => {
                     onChange={handleImageUpload}
                     className="hidden"
                   />
-                  <p className="text-xs text-muted-foreground text-center">
+                  <p className="text-xs text-center" style={{ color: '#34656D' }}>
                     JPG, PNG up to 5MB
                   </p>
                 </div>
@@ -496,13 +498,13 @@ const Profile = () => {
 
             {/* Profile Information Card */}
             <Card className="lg:col-span-2 border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
-              <div className="h-2 bg-gradient-to-r from-purple-400 to-pink-500"></div>
+              <div className="h-2" style={{ backgroundColor: '#334443' }}></div>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-purple-700">
-                  <User className="h-5 w-5" />
+                <CardTitle className="flex items-center gap-2" style={{ color: '#334443' }}>
+                  <User className="h-5 w-5" style={{ color: '#34656D' }} />
                   Personal Information
                 </CardTitle>
-                <CardDescription>
+                <CardDescription style={{ color: '#34656D' }}>
                   Update your personal details and contact information
                 </CardDescription>
               </CardHeader>
@@ -510,10 +512,10 @@ const Profile = () => {
                 <form onSubmit={handleProfileUpdate} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-gray-700">Full Name</Label>
+                      <Label htmlFor="name" style={{ color: '#334443' }}>Full Name</Label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <User className="h-4 w-4 text-gray-400" />
+                          <User className="h-4 w-4" style={{ color: '#34656D' }} />
                         </div>
                         <Input
                           id="name"
@@ -522,37 +524,39 @@ const Profile = () => {
                           placeholder="Enter your full name"
                           disabled={isUpdating}
                           required
-                          className="pl-10 border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                          className="pl-10 transition-colors duration-200"
+                          style={{ borderColor: '#FAEAB1' }}
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-gray-700">Email Address</Label>
+                      <Label htmlFor="email" style={{ color: '#334443' }}>Email Address</Label>
                       <div className="relative">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Mail className="h-4 w-4 text-gray-400" />
+                          <Mail className="h-4 w-4" style={{ color: '#34656D' }} />
                         </div>
                         <Input
                           id="email"
                           value={email}
                           disabled
-                          className="pl-10 bg-gray-100 border-gray-300"
+                          className="pl-10"
                           placeholder="Email address"
+                          style={{ backgroundColor: '#FAF8F1', borderColor: '#FAEAB1' }}
                         />
                       </div>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs" style={{ color: '#34656D' }}>
                         Email cannot be changed. Contact support if needed.
                       </p>
                     </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="text-gray-700">Phone Number</Label>
+                    <Label htmlFor="phone" style={{ color: '#334443' }}>Phone Number</Label>
                     <div className="flex gap-2">
                       <div className="relative flex-1">
                         <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                          <Phone className="h-4 w-4 text-gray-400" />
+                          <Phone className="h-4 w-4" style={{ color: '#34656D' }} />
                         </div>
                         <Input
                           id="phone"
@@ -561,7 +565,8 @@ const Profile = () => {
                           onChange={(e) => setPhone(e.target.value)}
                           placeholder="+1 (555) 123-4567"
                           disabled={isUpdating}
-                          className="pl-10 border-gray-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                          className="pl-10 transition-colors duration-200"
+                          style={{ borderColor: '#FAEAB1' }}
                         />
                       </div>
                       {phone && !phoneVerified && (
@@ -570,7 +575,8 @@ const Profile = () => {
                           onClick={sendPhoneVerification}
                           variant="outline"
                           disabled={phoneVerificationSent}
-                          className="border-indigo-300 text-indigo-600 hover:bg-indigo-50 transition-colors duration-200"
+                          className="transition-colors duration-200"
+                          style={{ borderColor: '#34656D', color: '#34656D' }}
                         >
                           {phoneVerificationSent ? "Code Sent" : "Verify"}
                         </Button>
@@ -579,12 +585,12 @@ const Profile = () => {
                     
                     <div className="flex items-center gap-2">
                       {phoneVerified && phone ? (
-                        <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 px-2 py-1 rounded-full">
+                        <Badge variant="default" className="px-2 py-1 rounded-full" style={{ backgroundColor: '#FAEAB1', color: '#334443', borderColor: '#FAEAB1' }}>
                           <Check className="h-3 w-3 mr-1" />
                           Verified
                         </Badge>
                       ) : phone ? (
-                        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-200 px-2 py-1 rounded-full">
+                        <Badge variant="secondary" className="px-2 py-1 rounded-full" style={{ backgroundColor: '#FAF8F1', color: '#34656D', borderColor: '#FAEAB1' }}>
                           <X className="h-3 w-3 mr-1" />
                           Not Verified
                         </Badge>
@@ -592,8 +598,8 @@ const Profile = () => {
                     </div>
 
                     {phoneVerificationSent && (
-                      <div className="bg-blue-50 border border-blue-200 p-4 rounded-lg space-y-3 shadow-sm">
-                        <p className="text-sm text-blue-800">
+                      <div className="p-4 rounded-lg space-y-3 shadow-sm" style={{ backgroundColor: '#FAEAB1', borderColor: '#FAEAB1' }}>
+                        <p className="text-sm" style={{ color: '#334443' }}>
                           Enter the verification code sent to {phone}
                         </p>
                         <div className="flex gap-2">
@@ -601,14 +607,16 @@ const Profile = () => {
                             value={verificationCode}
                             onChange={(e) => setVerificationCode(e.target.value)}
                             placeholder="Enter 6-digit code"
-                            className="flex-1 border-blue-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors duration-200"
+                            className="flex-1 transition-colors duration-200"
+                            style={{ borderColor: '#34656D' }}
                             maxLength={6}
                           />
                           <Button
                             type="button"
                             onClick={verifyPhoneCode}
                             disabled={isVerifyingPhone || !verificationCode}
-                            className="bg-blue-500 hover:bg-blue-600 transition-colors duration-200"
+                            className="transition-colors duration-200"
+                            style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
                           >
                             {isVerifyingPhone ? (
                               <Loader2 className="h-4 w-4 animate-spin" />
@@ -622,13 +630,17 @@ const Profile = () => {
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-gray-700">Account Type</Label>
+                    <Label style={{ color: '#334443' }}>Account Type</Label>
                     <div className="flex items-center gap-2">
-                      <Shield className="h-4 w-4 text-indigo-500" />
-                      <Badge variant={role === "admin" ? "default" : "secondary"} className="px-2 py-1 rounded-full">
+                      <Shield className="h-4 w-4" style={{ color: '#34656D' }} />
+                      <Badge variant={role === "admin" ? "default" : "secondary"} className="px-2 py-1 rounded-full" style={{ 
+                        backgroundColor: role === "admin" ? '#34656D' : '#FAF8F1', 
+                        color: role === "admin" ? '#FAF8F1' : '#34656D',
+                        borderColor: '#FAEAB1'
+                      }}>
                         {role === "admin" ? (
                           <>
-                            <Star className="h-3 w-3 mr-1 fill-yellow-400 text-yellow-400" />
+                            <Star className="h-3 w-3 mr-1" style={{ fill: '#FAEAB1', color: '#FAEAB1' }} />
                             Administrator
                           </>
                         ) : (
@@ -636,7 +648,7 @@ const Profile = () => {
                         )}
                       </Badge>
                     </div>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs" style={{ color: '#34656D' }}>
                       Contact support to change your account type.
                     </p>
                   </div>
@@ -644,7 +656,8 @@ const Profile = () => {
                   <Button 
                     type="submit" 
                     disabled={isUpdating} 
-                    className="w-full bg-gradient-to-r from-indigo-500 to-purple-600 hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+                    className="w-full transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
+                    style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
                   >
                     {isUpdating ? (
                       <>
@@ -665,28 +678,28 @@ const Profile = () => {
 
           {/* Account Information Card */}
           <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
-            <div className="h-2 bg-gradient-to-r from-indigo-400 to-blue-500"></div>
+            <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-blue-700">
-                <Sparkles className="h-5 w-5" />
+              <CardTitle className="flex items-center gap-2" style={{ color: '#334443' }}>
+                <Sparkles className="h-5 w-5" style={{ color: '#34656D' }} />
                 Account Information
               </CardTitle>
-              <CardDescription>
+              <CardDescription style={{ color: '#34656D' }}>
                 View your account details and status
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium text-gray-700">Account ID</Label>
-                  <p className="text-sm text-muted-foreground font-mono bg-gray-100 p-2 rounded-md">
+                  <Label className="text-sm font-medium" style={{ color: '#334443' }}>Account ID</Label>
+                  <p className="text-sm font-mono p-2 rounded-md" style={{ backgroundColor: '#FAF8F1', color: '#34656D' }}>
                     {user.id.substring(0, 8)}...
                   </p>
                 </div>
                 
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium text-gray-700">Member Since</Label>
-                  <p className="text-sm text-muted-foreground bg-gray-100 p-2 rounded-md">
+                  <Label className="text-sm font-medium" style={{ color: '#334443' }}>Member Since</Label>
+                  <p className="text-sm p-2 rounded-md" style={{ backgroundColor: '#FAF8F1', color: '#34656D' }}>
                     {profile.created_at ? new Date(profile.created_at).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
@@ -696,8 +709,8 @@ const Profile = () => {
                 </div>
                 
                 <div className="space-y-1">
-                  <Label className="text-sm font-medium text-gray-700">Email Status</Label>
-                  <Badge variant="default" className="bg-green-100 text-green-800 border-green-200 px-2 py-1 rounded-full">
+                  <Label className="text-sm font-medium" style={{ color: '#334443' }}>Email Status</Label>
+                  <Badge variant="default" className="px-2 py-1 rounded-full" style={{ backgroundColor: '#FAEAB1', color: '#334443', borderColor: '#FAEAB1' }}>
                     <Check className="h-3 w-3 mr-1" />
                     Verified
                   </Badge>

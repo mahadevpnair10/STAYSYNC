@@ -1,19 +1,15 @@
 // File: src/pages/HotelPage.tsx
-// Create a route: <Route path="/hotels/:id" element={<HotelPage/>} />
-// Adjust the import path to your supabaseClient if necessary (project root vs alias).
+// Route: <Route path="/hotels/:id" element={<HotelPage/>} />
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import { supabase } from "../../supabaseClient"; // <-- adjust if your client is elsewhere
+import { supabase } from "../../supabaseClient"; // adjust path if needed
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-
-// Date picker
 import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
-// Types
 type Hotel = {
   property_id: number;
   property_name: string;
@@ -51,16 +47,27 @@ export default function HotelPage() {
   const [bookings, setBookings] = useState<Booking[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // modal state (use react-day-picker date range)
+  // UI state
   const [selectedRoom, setSelectedRoom] = useState<Room | null>(null);
   const [range, setRange] = useState<DateRange | undefined>(undefined);
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [sortAsc, setSortAsc] = useState<boolean | null>(null); // null = original
+  const [isShuffled, setIsShuffled] = useState(false);
+
+  // drag-n-drop refs
+  const dragIndexRef = useRef<number | null>(null);
+
+  // palette constants
+  const BG = "#FAF8F1";
+  const ACCENT = "#FAEAB1";
+  const PRIMARY = "#34656D";
+  const TEXT = "#334443";
 
   // get current user id helper
   const getCurrentUserId = async (): Promise<string | null> => {
     try {
-      // try supabase auth (v2)
+      // supabase auth v2
       // @ts-ignore
       const { data, error } = await supabase.auth.getUser();
       if (error) return null;
@@ -68,7 +75,6 @@ export default function HotelPage() {
       if (data?.user?.id) return data.user.id;
     } catch (_) {}
 
-    // fallback: if you store user in localStorage (earlier code saved staysync_user)
     try {
       const stored = localStorage.getItem("staysync_user");
       if (stored) {
@@ -76,7 +82,6 @@ export default function HotelPage() {
         if (parsed?.id) return parsed.id;
       }
     } catch (_) {}
-
     return null;
   };
 
@@ -85,7 +90,6 @@ export default function HotelPage() {
 
     const fetchAll = async () => {
       setLoading(true);
-      console.log(hotelId);
       try {
         const { data: hotelData, error: hotelErr } = await supabase
           .from("hotel")
@@ -103,7 +107,7 @@ export default function HotelPage() {
         if (roomsErr) console.error(roomsErr);
         else setRooms((roomsData as Room[]) || []);
 
-        // fetch bookings for rooms of this hotel
+        // bookings for these rooms
         const roomIds = (roomsData || []).map((r: any) => r.id);
         if (roomIds.length > 0) {
           const { data: bookingsData, error: bookingsErr } = await supabase
@@ -111,7 +115,7 @@ export default function HotelPage() {
             .select("*")
             .in("room_id", roomIds);
           if (bookingsErr) console.error(bookingsErr);
-          else setBookings((bookingsData as Booking[]));
+          else setBookings((bookingsData as Booking[]) || []);
         } else {
           setBookings([]);
         }
@@ -120,34 +124,28 @@ export default function HotelPage() {
       } finally {
         setLoading(false);
       }
-      console.log(bookings);
     };
 
     fetchAll();
   }, [hotelId]);
 
-  // utility: check if requested range overlaps ANY booking for that room OR comes before booked_till
+  // --- utilities (kept from original) ---
   const rangeOverlaps = (roomId: number, start: string, end: string) => {
     if (!start || !end) return false;
     const s = new Date(start);
     const e = new Date(end);
-    if (s > e) return true; // invalid range -> treat as overlap to block
+    if (s > e) return true; // invalid -> block
 
-    // Find the room to check booked_till
-    const room = rooms.find(r => r.id === roomId);
+    const room = rooms.find((r) => r.id === roomId);
     if (room?.booked_till) {
       const bookedTillDate = new Date(room.booked_till);
-      // If start date is before or on booked_till date, it's not available
-      if (s <= bookedTillDate) {
-        return true;
-      }
+      if (s <= bookedTillDate) return true;
     }
 
     const roomBookings = bookings.filter((b) => b.room_id === roomId);
     for (const b of roomBookings) {
       const bs = new Date(b.start_date);
       const be = new Date(b.end_date);
-      // overlap if start <= be && end >= bs
       if (s <= be && e >= bs) return true;
     }
     return false;
@@ -172,31 +170,25 @@ export default function HotelPage() {
     return diff > 0 ? diff : 0;
   };
 
-  // Build disabled ranges for a given room from bookings AND booked_till
   const getDisabledRangesForRoom = (roomId: number) => {
-    const disabledRanges = [];
-    
-    // Find the room to get booked_till
-    const room = rooms.find(r => r.id === roomId);
-    
-    // If room has booked_till, disable all dates from start of time until booked_till
+    const disabledRanges: { from: Date; to: Date }[] = [];
+    const room = rooms.find((r) => r.id === roomId);
+
     if (room?.booked_till) {
       const bookedTillDate = new Date(room.booked_till);
-      // Disable from a very early date to booked_till (inclusive)
       disabledRanges.push({
-        from: new Date('2020-01-01'), // or any early date
-        to: bookedTillDate
+        from: new Date("2020-01-01"),
+        to: bookedTillDate,
       });
     }
-    
-    // Add disabled ranges for existing bookings
+
     const bookingRanges = bookings
       .filter((b) => b.room_id === roomId)
-      .map((b) => ({ 
-        from: new Date(b.start_date), 
-        to: new Date(b.end_date) 
+      .map((b) => ({
+        from: new Date(b.start_date),
+        to: new Date(b.end_date),
       }));
-    
+
     return [...disabledRanges, ...bookingRanges];
   };
 
@@ -214,11 +206,9 @@ export default function HotelPage() {
       return;
     }
 
-    // convert to yyyy-mm-dd
     const startDate = formatYMD(from)!;
     const endDate = formatYMD(to)!;
 
-    // validate
     const s = new Date(startDate);
     const e = new Date(endDate);
     if (s > e) {
@@ -226,7 +216,6 @@ export default function HotelPage() {
       return;
     }
 
-    // check overlap with existing bookings AND booked_till (extra guard — picker should prevent this)
     const overlapped = rangeOverlaps(selectedRoom.id, startDate, endDate);
     if (overlapped) {
       if (selectedRoom.booked_till && new Date(startDate) <= new Date(selectedRoom.booked_till)) {
@@ -237,7 +226,6 @@ export default function HotelPage() {
       return;
     }
 
-    // ensure logged in
     const userId = await getCurrentUserId();
     if (!userId) {
       setErrorMsg("You must be logged in to book. Redirecting to login...");
@@ -245,7 +233,7 @@ export default function HotelPage() {
       return;
     }
 
-    const days = daysBetween(startDate, endDate);
+    const nights = daysBetween(startDate, endDate);
 
     setSubmitting(true);
     try {
@@ -255,25 +243,20 @@ export default function HotelPage() {
           user_id: userId,
           start_date: startDate,
           end_date: endDate,
-          days: days,
+          days: nights,
         },
       ]);
       if (error) {
         console.error(error);
         setErrorMsg(error.message || "Failed to book. Please try again.");
       } else {
-        // success: refresh bookings & rooms (trigger will update rooms.booked_till on backend)
-        // fetch bookings again
-        const { data: bookingsData } = await supabase
-          .from("bookings")
-          .select("*")
-          .eq("room_id", selectedRoom.id);
+        // refresh bookings for this room, and refresh rooms list
+        const { data: bookingsData } = await supabase.from("bookings").select("*").eq("room_id", selectedRoom.id);
         setBookings((prev) => {
           const others = prev.filter((b) => b.room_id !== selectedRoom.id);
           return [...others, ...(bookingsData || [])];
         });
 
-        // refresh rooms row
         const { data: roomsData } = await supabase
           .from("rooms")
           .select("*")
@@ -292,138 +275,375 @@ export default function HotelPage() {
     }
   };
 
-  if (loading) return <p className="text-center p-8">Loading hotel...</p>;
-  if (!hotel) return <p className="text-center p-8">Hotel not found.</p>;
+  // ---------- Modern UI interactions: shuffle, sort, drag/drop ----------
+  const shuffleRooms = () => {
+    // Fisher-Yates shuffle
+    const arr = [...rooms];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    setRooms(arr);
+    setIsShuffled(true);
+    setSortAsc(null);
+  };
+
+  const sortByPrice = (asc = true) => {
+    const arr = [...rooms].sort((a, b) => (asc ? a.price - b.price : b.price - a.price));
+    setRooms(arr);
+    setSortAsc(asc);
+    setIsShuffled(false);
+  };
+
+  const resetOrder = async () => {
+    // Re-fetch rooms to get original order from DB
+    try {
+      const { data: roomsData } = await supabase.from("rooms").select("*").eq("hotel_id", hotelId).order("id", { ascending: true });
+      setRooms((roomsData as Room[]) || []);
+      setSortAsc(null);
+      setIsShuffled(false);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // Drag handlers (native HTML5)
+  const onDragStart = (e: React.DragEvent, idx: number) => {
+    dragIndexRef.current = idx;
+    e.dataTransfer.effectAllowed = "move";
+    // small transparent drag image to avoid default ghost
+    const img = document.createElement("canvas");
+    img.width = img.height = 0;
+    e.dataTransfer.setDragImage(img, 0, 0);
+  };
+
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+  };
+
+  const onDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault();
+    const from = dragIndexRef.current;
+    if (from === null || from === undefined) return;
+    if (from === dropIndex) return;
+    const arr = [...rooms];
+    const [moved] = arr.splice(from, 1);
+    arr.splice(dropIndex, 0, moved);
+    setRooms(arr);
+    dragIndexRef.current = null;
+    setIsShuffled(false);
+    setSortAsc(null);
+  };
+
+  if (loading) return <div style={{ padding: 32, textAlign: "center", color: TEXT }}>Loading hotel...</div>;
+  if (!hotel) return <div style={{ padding: 32, textAlign: "center", color: TEXT }}>Hotel not found.</div>;
 
   return (
-    <main className="container mx-auto py-8">
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">{hotel.property_name}</h1>
-          <p className="text-sm text-muted-foreground">
-            {hotel.town || ""} {hotel.state ? `• ${hotel.state}` : ""}
-          </p>
-        </div>
-        <Link to="/">
-          <Button variant="ghost">Back to hotels</Button>
-        </Link>
-      </div>
+    <main style={{ background: BG, minHeight: "100vh", color: TEXT }}>
+      <div className="container mx-auto px-4 py-8">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 style={{ fontSize: 22, fontWeight: 700 }}>{hotel.property_name}</h1>
+            <p style={{ marginTop: 4, color: `${TEXT}CC` }}>
+              {hotel.town || ""} {hotel.state ? `• ${hotel.state}` : ""}
+            </p>
+          </div>
 
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {rooms.length === 0 && (
-          <p className="text-muted-foreground">No rooms available for this hotel.</p>
-        )}
+          <div className="flex items-center gap-3">
+            <Link to="/">
+              <Button style={{ background: "transparent", color: PRIMARY, border: `1px solid ${PRIMARY}` }}>Back</Button>
+            </Link>
+            {/* Shuffle + sort controls */}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={shuffleRooms}
+                title="Shuffle rooms"
+                style={{
+                  background: ACCENT,
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  border: "none",
+                  cursor: "pointer",
+                  color: TEXT,
+                  boxShadow: "0 6px 18px rgba(52,101,109,0.08)",
+                }}
+              >
+                Shuffle
+              </button>
 
-        {rooms.map((room) => {
-          // derive quick availability text: if booked_till >= today then 'Unavailable until X'
-          const today = new Date();
-          const bt = room.booked_till ? new Date(room.booked_till) : null;
-          const unavailableUntil = bt && bt >= today ? bt.toISOString().slice(0, 10) : null;
+              <button
+                onClick={() => sortByPrice(true)}
+                title="Sort price ↑"
+                style={{
+                  background: sortAsc === true ? PRIMARY : "transparent",
+                  color: sortAsc === true ? BG : PRIMARY,
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  border: `1px solid ${PRIMARY}`,
+                  cursor: "pointer",
+                  boxShadow: "0 6px 18px rgba(52,101,109,0.06)",
+                }}
+              >
+                Price ↑
+              </button>
 
-          // find bookings for this room as ranges
-          const roomBookings = bookings
-            .filter((b) => b.room_id === room.id)
-            .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+              <button
+                onClick={() => sortByPrice(false)}
+                title="Sort price ↓"
+                style={{
+                  background: sortAsc === false ? PRIMARY : "transparent",
+                  color: sortAsc === false ? BG : PRIMARY,
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  border: `1px solid ${PRIMARY}`,
+                  cursor: "pointer",
+                  boxShadow: "0 6px 18px rgba(52,101,109,0.06)",
+                }}
+              >
+                Price ↓
+              </button>
 
-          return (
-            <Card key={room.id} className="p-4">
-              <CardHeader>
-                <CardTitle>
-                  {room.room_type} — ₹{room.price}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm mb-2">Room ID: {room.id}</p>
-                {unavailableUntil ? (
-                  <p className="text-sm text-rose-600">Unavailable until {unavailableUntil}</p>
-                ) : (
-                  <p className="text-sm text-emerald-600">Available now</p>
-                )}
-
-                {roomBookings.length > 0 && (
-                  <div className="mt-3 text-xs text-muted-foreground">
-                    <strong>Booked ranges:</strong>
-                    <ul className="list-disc ml-5">
-                      {roomBookings.map((b) => (
-                        <li key={b.id}>
-                          {b.start_date} → {b.end_date}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-
-                <div className="mt-4 flex gap-2">
-                  <Button onClick={() => openBookModal(room)}>Book this room</Button>
-                </div>
-              </CardContent>
-            </Card>
-          );
-        })}
-      </section>
-
-      {/* Booking modal (react-day-picker range) */}
-      {selectedRoom && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white rounded-xl p-6 w-full max-w-xl">
-            <div className="flex items-start justify-between">
-              <div>
-                <h3 className="text-lg font-semibold mb-1">Book: {selectedRoom.room_type}</h3>
-                <p className="text-sm mb-2">Price per night: ₹{selectedRoom.price}</p>
-                {selectedRoom.booked_till && (
-                  <p className="text-xs text-amber-600">
-                    Available from: {new Date(selectedRoom.booked_till).toLocaleDateString()} onwards
-                  </p>
-                )}
-              </div>
-              <button onClick={closeModal} className="text-sm text-muted-foreground">Close</button>
-            </div>
-
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground mb-2">Pick a date range (blocked days are disabled)</p>
-
-              <div className="bg-gray-50 rounded p-3">
-                <DayPicker
-                  mode="range"
-                  selected={range}
-                  onSelect={(r) => setRange(r as DateRange)}
-                  // disable ranges that already have bookings for this room AND dates before booked_till
-                  disabled={getDisabledRangesForRoom(selectedRoom.id)}
-                  // Optional: prevent selection of past dates
-                  fromDate={new Date()}
-                />
-              </div>
-
-              <div className="mt-3 text-sm">
-                <div>Selected start: {formatYMD(range?.from ?? null) ?? "—"}</div>
-                <div>Selected end: {formatYMD(range?.to ?? null) ?? "—"}</div>
-                {range?.from && range?.to && (
-                  <div className="mt-1 text-emerald-600">
-                    Total nights: {daysBetween(formatYMD(range.from)!, formatYMD(range.to)!)} 
-                    • Total cost: ₹{daysBetween(formatYMD(range.from)!, formatYMD(range.to)!) * selectedRoom.price}
-                  </div>
-                )}
-              </div>
-
-              {errorMsg && <p className="text-rose-600 text-sm mt-2">{errorMsg}</p>}
-
-              <div className="flex justify-end gap-2 mt-4">
-                <button className="btn" onClick={closeModal} disabled={submitting}>
-                  Cancel
-                </button>
-                <button
-                  className="btn btn-primary"
-                  onClick={handleBook}
-                  disabled={submitting}
-                >
-                  {submitting ? "Booking..." : "Confirm booking"}
-                </button>
-              </div>
+              <button
+                onClick={resetOrder}
+                title="Reset"
+                style={{
+                  background: "transparent",
+                  color: PRIMARY,
+                  borderRadius: 8,
+                  padding: "8px 10px",
+                  border: `1px dashed ${PRIMARY}`,
+                  cursor: "pointer",
+                }}
+              >
+                Reset
+              </button>
             </div>
           </div>
         </div>
-      )}
+
+        {/* Rooms grid (compact cards, draggable) */}
+        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {rooms.length === 0 && <div style={{ padding: 16 }}>No rooms available.</div>}
+
+          {rooms.map((room, idx) => {
+            const today = new Date();
+            const bt = room.booked_till ? new Date(room.booked_till) : null;
+            const unavailableUntil = bt && bt >= today ? bt.toISOString().slice(0, 10) : null;
+
+            const roomBookings = bookings
+              .filter((b) => b.room_id === room.id)
+              .sort((a, b) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime());
+
+            return (
+              <div
+                key={room.id}
+                draggable
+                onDragStart={(e) => onDragStart(e, idx)}
+                onDragOver={onDragOver}
+                onDrop={(e) => onDrop(e, idx)}
+                className="cursor-grab"
+              >
+                <Card
+                  className="p-3"
+                  style={{
+                    borderRadius: 12,
+                    background: "#fff",
+                    boxShadow: "0 10px 30px rgba(51,68,67,0.06)",
+                    border: `1px solid ${ACCENT}33`,
+                  }}
+                >
+                  <CardHeader style={{ padding: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8 }}>
+                      <div>
+                        <CardTitle style={{ fontSize: 16, marginBottom: 2, color: TEXT }}>
+                          {room.room_type}
+                        </CardTitle>
+                        <div style={{ fontSize: 13, color: `${TEXT}AA` }}>ID: {room.id}</div>
+                      </div>
+
+                      <div style={{ textAlign: "right" }}>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: PRIMARY }}>₹{room.price}</div>
+                        <div
+                          style={{
+                            marginTop: 6,
+                            fontSize: 12,
+                            color: unavailableUntil ? "#B91C1C" : "#047857",
+                            background: unavailableUntil ? "#FEE2E2" : "#DCFCE7",
+                            padding: "4px 8px",
+                            borderRadius: 999,
+                            display: "inline-block",
+                          }}
+                        >
+                          {unavailableUntil ? `Unavailable until ${unavailableUntil}` : "Available"}
+                        </div>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent style={{ paddingTop: 10 }}>
+                    {/* small bookings preview */}
+                    {roomBookings.length > 0 ? (
+                      <div style={{ fontSize: 12, color: `${TEXT}99`, marginBottom: 8 }}>
+                        <strong className="mr-2" style={{ color: TEXT }}>
+                          Booked:
+                        </strong>
+                        {roomBookings.slice(0, 2).map((b) => (
+                          <span key={b.id} style={{ display: "inline-block", marginRight: 8 }}>
+                            {b.start_date}→{b.end_date}
+                          </span>
+                        ))}
+                        {roomBookings.length > 2 && <span style={{ color: `${TEXT}88` }}>+{roomBookings.length - 2}</span>}
+                      </div>
+                    ) : (
+                      <div style={{ fontSize: 12, color: `${TEXT}88`, marginBottom: 8 }}>No upcoming bookings</div>
+                    )}
+
+                    <div style={{ display: "flex", gap: 8 }}>
+                      <button
+                        onClick={() => openBookModal(room)}
+                        style={{
+                          background: PRIMARY,
+                          color: BG,
+                          borderRadius: 8,
+                          padding: "8px 10px",
+                          border: "none",
+                          cursor: "pointer",
+                          flex: 1,
+                        }}
+                      >
+                        Book
+                      </button>
+
+                      <button
+                        onClick={async () => {
+                          // quick refresh bookings for this room
+                          const { data: bookingsData } = await supabase.from("bookings").select("*").eq("room_id", room.id);
+                          setBookings((prev) => {
+                            const others = prev.filter((b) => b.room_id !== room.id);
+                            return [...others, ...(bookingsData || [])];
+                          });
+                          alert("Bookings refreshed for this room.");
+                        }}
+                        style={{
+                          background: "transparent",
+                          color: PRIMARY,
+                          border: `1px solid ${ACCENT}`,
+                          borderRadius: 8,
+                          padding: "8px 10px",
+                          cursor: "pointer",
+                        }}
+                      >
+                        Refresh
+                      </button>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            );
+          })}
+        </section>
+
+        {/* Booking modal */}
+        {selectedRoom && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center"
+            style={{ background: "rgba(0,0,0,0.45)" }}
+          >
+            <div style={{ width: "min(920px, 96%)", background: BG, borderRadius: 12, padding: 20 }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                <div>
+                  <h3 style={{ fontSize: 18, fontWeight: 700, color: TEXT }}>Book: {selectedRoom.room_type}</h3>
+                  <p style={{ marginTop: 6, color: `${TEXT}CC` }}>Price per night: ₹{selectedRoom.price}</p>
+                  {selectedRoom.booked_till && (
+                    <p style={{ fontSize: 13, color: PRIMARY, marginTop: 6 }}>
+                      Available from: {new Date(selectedRoom.booked_till).toLocaleDateString()} onwards
+                    </p>
+                  )}
+                </div>
+                <button onClick={closeModal} style={{ background: "transparent", border: "none", color: TEXT }}>
+                  Close
+                </button>
+              </div>
+
+              <div style={{ marginTop: 12 }}>
+                <p style={{ fontSize: 13, color: `${TEXT}99`, marginBottom: 8 }}>
+                  Pick a date range (blocked days are disabled)
+                </p>
+
+                <div style={{ background: "#fff", borderRadius: 8, padding: 12 }}>
+                  <DayPicker
+                    mode="range"
+                    selected={range}
+                    onSelect={(r) => setRange(r as DateRange)}
+                    disabled={getDisabledRangesForRoom(selectedRoom.id)}
+                    fromDate={new Date()}
+                  />
+                </div>
+
+                <div style={{ marginTop: 12, fontSize: 14, color: TEXT }}>
+                  <div>Selected start: {formatYMD(range?.from ?? null) ?? "—"}</div>
+                  <div>Selected end: {formatYMD(range?.to ?? null) ?? "—"}</div>
+                  {range?.from && range?.to && (
+                    <div style={{ marginTop: 8, color: "#047857" }}>
+                      Total nights: {daysBetween(formatYMD(range.from)!, formatYMD(range.to)!)} • Total cost:
+                      ₹{daysBetween(formatYMD(range.from)!, formatYMD(range.to)!) * selectedRoom.price}
+                    </div>
+                  )}
+                </div>
+
+                {errorMsg && (
+                  <div style={{ marginTop: 10, color: "#B91C1C", fontSize: 13 }}>
+                    {errorMsg}
+                  </div>
+                )}
+
+                <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, marginTop: 14 }}>
+                  <button
+                    onClick={closeModal}
+                    disabled={submitting}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: 8,
+                      border: `1px solid ${ACCENT}`,
+                      background: "transparent",
+                      cursor: "pointer",
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleBook}
+                    disabled={submitting}
+                    style={{
+                      padding: "8px 14px",
+                      borderRadius: 8,
+                      background: PRIMARY,
+                      color: BG,
+                      border: "none",
+                      cursor: "pointer",
+                    }}
+                  >
+                    {submitting ? "Booking..." : "Confirm booking"}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* small helper styles */}
+      <style>{`
+        /* keep DayPicker neutral, override calendar colors lightly */
+        .rdp-day_selected, .rdp-day_range_middle {
+          background: ${PRIMARY} !important;
+          color: ${BG} !important;
+        }
+        .rdp-day_today {
+          box-shadow: 0 0 0 1px ${ACCENT} inset;
+        }
+      `}</style>
     </main>
   );
 }
-

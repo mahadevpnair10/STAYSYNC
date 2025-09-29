@@ -25,7 +25,11 @@ import {
   Clock,
   CheckCircle,
   XCircle,
-  Edit
+  Edit,
+  Bed,
+  Coffee,
+  Shield,
+  Heart
 } from "lucide-react";
 
 interface Room {
@@ -134,7 +138,6 @@ const UserPortal = () => {
 
   // Fetch user data and related information
   useEffect(() => {
-
     const fetchUserData = async () => {
       try {
         const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
@@ -497,692 +500,775 @@ const UserPortal = () => {
 
   if (loading) {
     return (
-      <div className="container mx-auto py-10">
+      <div className="container mx-auto py-10" style={{ backgroundColor: '#FAF8F1', minHeight: '100vh' }}>
         <div className="flex flex-col items-center justify-center h-[60vh]">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mb-4"></div>
-          <p className="text-muted-foreground">Loading your data...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 mb-4" style={{ borderColor: '#34656D' }}></div>
+          <p style={{ color: '#334443' }}>Loading your data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <main className="container mx-auto py-8 px-4">
+    <main className="container mx-auto py-8 px-4" style={{ backgroundColor: '#FAF8F1', minHeight: '100vh' }}>
       <SEO
         title="User Portal"
         description="Book rooms, request room service, housekeeping, and make payments."
         canonical="/user"
       />
 
-      <div className="flex items-center gap-3 mb-6">
-        <div className="p-2 bg-primary/10 rounded-full">
-          <User className="w-6 h-6 text-primary" />
-        </div>
-        <div>
-          <h1 className="text-3xl font-bold">User Portal</h1>
-          <p className="mt-1 text-muted-foreground">Welcome back, {user?.email}</p>
-        </div>
+      {/* Animated background elements */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute -top-40 -right-40 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob" style={{ backgroundColor: '#34656D' }}></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-2000" style={{ backgroundColor: '#334443' }}></div>
+        <div className="absolute top-1/2 left-1/4 w-80 h-80 rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-blob animation-delay-4000" style={{ backgroundColor: '#FAEAB1' }}></div>
       </div>
 
-      {currentBooking && (
-        <Card className="mb-6 bg-primary/5 border-primary/20">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <div className="flex items-center gap-2 mb-1">
-                  <Badge variant="outline" className="bg-primary/10 text-primary">
-                    Current Stay
-                  </Badge>
-                  <span className="text-sm text-muted-foreground">
-                    Until {new Date(currentBooking.end_date).toLocaleDateString()}
-                  </span>
-                </div>
-                <h3 className="font-semibold">
-                  {currentBooking.rooms.room_type} at {currentBooking.hotel?.property_name}
-                </h3>
-                <p className="text-sm text-muted-foreground">
-                  {currentBooking.hotel?.town}, {currentBooking.hotel?.state}
-                </p>
-              </div>
-              {/* <Button variant="outline" size="sm">
-                <Edit className="w-4 h-4 mr-2" />
-                Manage Stay
-              </Button> */}
+      <div className="relative z-10">
+        {/* Header Section */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <div className="p-3 rounded-2xl shadow-lg" style={{ backgroundColor: '#34656D' }}>
+              <User className="w-8 h-8" style={{ color: '#FAF8F1' }} />
             </div>
-          </CardContent>
-        </Card>
-      )}
+            <div>
+              <h1 className="text-4xl font-bold" style={{ color: '#334443' }}>User Portal</h1>
+              <p className="mt-1 text-lg" style={{ color: '#34656D' }}>Welcome back, {user?.email}</p>
+            </div>
+          </div>
+          <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full shadow-sm" style={{ backgroundColor: '#FAEAB1' }}>
+            <Shield className="w-5 h-5" style={{ color: '#334443' }} />
+            <span className="text-sm font-medium" style={{ color: '#334443' }}>Secure Portal</span>
+          </div>
+        </div>
 
-      <Tabs defaultValue="bookings" className="mt-8">
-        <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-2 p-1 bg-muted/50 h-auto">
-          <TabsTrigger value="bookings" className="flex items-center gap-2 py-2">
-            <Calendar className="w-4 h-4" />
-            <span className="hidden sm:inline">Bookings</span>
-          </TabsTrigger>
-          <TabsTrigger value="room-service" className="flex items-center gap-2 py-2">
-            <Utensils className="w-4 h-4" />
-            <span className="hidden sm:inline">Room Service</span>
-          </TabsTrigger>
-          <TabsTrigger value="housekeeping" className="flex items-center gap-2 py-2">
-            <Sparkles className="w-4 h-4" />
-            <span className="hidden sm:inline">Housekeeping</span>
-          </TabsTrigger>
-          <TabsTrigger value="payments" className="flex items-center gap-2 py-2">
-            <CreditCard className="w-4 h-4" />
-            <span className="hidden sm:inline">Payments</span>
-          </TabsTrigger>
-          <TabsTrigger value="feedback" className="flex items-center gap-2 py-2">
-            <Star className="w-4 h-4" />
-            <span className="hidden sm:inline">Feedback</span>
-          </TabsTrigger>
-          <TabsTrigger value="floor-maps" className="flex items-center gap-2 py-2">
-            <MapPin className="w-4 h-4" />
-            <span className="hidden sm:inline">Maps</span>
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="bookings" className="space-y-6 mt-6">
-          <div className="grid gap-6 lg:grid-cols-1">
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Bookings</CardTitle>
-                <CardDescription>Past and upcoming reservations</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {bookings.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Calendar className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold">No bookings yet</h3>
-                    <p className="text-muted-foreground mt-2">Book your first stay to get started</p>
+        {currentBooking && (
+          <Card className="mb-8 border-0 shadow-xl overflow-hidden relative" style={{ backgroundColor: '#FAEAB1' }}>
+            <div className="absolute top-0 left-0 w-2 h-full" style={{ backgroundColor: '#34656D' }}></div>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-xl" style={{ backgroundColor: '#34656D' }}>
+                    <Bed className="w-6 h-6" style={{ color: '#FAF8F1' }} />
                   </div>
-                ) : (
-                  <div className="space-y-4">
-                    {bookings.map(booking => (
-                      <div key={booking.id} className="p-4 border rounded-lg">
-                        <div className="flex justify-between items-start mb-2">
-                          <div>
-                            <h4 className="font-medium">{booking.rooms.room_type}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              {booking.hotel?.property_name}
-                            </p>
+                  <div>
+                    <div className="flex items-center gap-3 mb-2">
+                      <Badge className="px-3 py-1 rounded-full" style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}>
+                        Current Stay
+                      </Badge>
+                      <span className="text-sm" style={{ color: '#334443' }}>
+                        Until {new Date(currentBooking.end_date).toLocaleDateString()}
+                      </span>
+                    </div>
+                    <h3 className="font-bold text-xl" style={{ color: '#334443' }}>
+                      {currentBooking.rooms.room_type} at {currentBooking.hotel?.property_name}
+                    </h3>
+                    <p className="text-sm mt-1" style={{ color: '#34656D' }}>
+                      {currentBooking.hotel?.town}, {currentBooking.hotel?.state}
+                    </p>
+                  </div>
+                </div>
+                <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-full" style={{ backgroundColor: '#FAF8F1' }}>
+                  <Clock className="w-4 h-4" style={{ color: '#34656D' }} />
+                  <span className="text-sm font-medium" style={{ color: '#334443' }}>Active</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        <Tabs defaultValue="bookings" className="mt-8">
+          <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-3 p-2 h-auto rounded-2xl" style={{ backgroundColor: '#FAEAB1' }}>
+            <TabsTrigger 
+              value="bookings" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <Calendar className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Bookings</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="room-service" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <Coffee className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Room Service</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="housekeeping" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <Sparkles className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Housekeeping</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="payments" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <CreditCard className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Payments</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="feedback" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <Heart className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Feedback</span>
+            </TabsTrigger>
+            <TabsTrigger 
+              value="floor-maps" 
+              className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
+              style={{ 
+                backgroundColor: 'transparent',
+                color: '#334443'
+              }}
+            >
+              <div className="p-2 rounded-lg" style={{ backgroundColor: '#34656D20' }}>
+                <MapPin className="w-4 h-4" style={{ color: '#34656D' }} />
+              </div>
+              <span className="font-medium">Maps</span>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="bookings" className="space-y-6 mt-6">
+            <div className="grid gap-6 lg:grid-cols-1">
+              <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+                <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                    <Calendar className="w-6 h-6" style={{ color: '#34656D' }} />
+                    Your Bookings
+                  </CardTitle>
+                  <CardDescription style={{ color: '#34656D' }}>
+                    Past and upcoming reservations
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {bookings.length === 0 ? (
+                    <div className="text-center py-12">
+                      <Calendar className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No bookings yet</h3>
+                      <p style={{ color: '#34656D' }}>Book your first stay to get started</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {bookings.map(booking => (
+                        <div key={booking.id} className="p-6 border rounded-2xl transition-all duration-300 hover:shadow-lg" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                          <div className="flex justify-between items-start mb-4">
+                            <div>
+                              <h4 className="font-bold text-lg mb-1" style={{ color: '#334443' }}>{booking.rooms.room_type}</h4>
+                              <p className="text-sm" style={{ color: '#34656D' }}>
+                                {booking.hotel?.property_name}
+                              </p>
+                            </div>
+                            <Badge className="px-3 py-1 rounded-full font-medium" style={{ 
+                              backgroundColor: new Date(booking.end_date) < new Date() ? '#FAEAB1' : 
+                                new Date(booking.start_date) <= new Date() ? '#34656D' : '#33444320',
+                              color: new Date(booking.end_date) < new Date() ? '#334443' : '#FAF8F1'
+                            }}>
+                              {new Date(booking.end_date) < new Date() ? "Completed" : 
+                               new Date(booking.start_date) <= new Date() ? "Active" : "Upcoming"}
+                            </Badge>
                           </div>
-                          <Badge variant={
-                            new Date(booking.end_date) < new Date() ? "outline" : 
-                            new Date(booking.start_date) <= new Date() ? "default" : "secondary"
-                          }>
-                            {new Date(booking.end_date) < new Date() ? "Completed" : 
-                             new Date(booking.start_date) <= new Date() ? "Active" : "Upcoming"}
-                          </Badge>
+                          
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div>
+                              <span style={{ color: '#34656D' }}>Check-in:</span>
+                              <p className="font-medium mt-1" style={{ color: '#334443' }}>{new Date(booking.start_date).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                              <span style={{ color: '#34656D' }}>Check-out:</span>
+                              <p className="font-medium mt-1" style={{ color: '#334443' }}>{new Date(booking.end_date).toLocaleDateString()}</p>
+                            </div>
+                            <div>
+                              <span style={{ color: '#34656D' }}>Nights:</span>
+                              <p className="font-medium mt-1" style={{ color: '#334443' }}>{booking.days}</p>
+                            </div>
+                            <div>
+                              <span style={{ color: '#34656D' }}>Total:</span>
+                              <p className="font-medium mt-1" style={{ color: '#334443' }}>₹{booking.rooms.price * booking.days}</p>
+                            </div>
+                          </div>
                         </div>
-                        
-                        <div className="grid grid-cols-2 gap-2 text-sm mt-3">
-                          <div>
-                            <span className="text-muted-foreground">Check-in:</span>
-                            <p>{new Date(booking.start_date).toLocaleDateString()}</p>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="room-service" className="space-y-6 mt-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+                <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                    <Coffee className="w-6 h-6" style={{ color: '#34656D' }} />
+                    Room Service
+                  </CardTitle>
+                  <CardDescription style={{ color: '#34656D' }}>
+                    Order food or amenities to your room
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!currentBooking ? (
+                    <div className="text-center py-12">
+                      <Coffee className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No active booking</h3>
+                      <p style={{ color: '#34656D' }}>
+                        You need an active booking to request room service
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Item Requested</label>
+                        <Input 
+                          placeholder="e.g. Caesar Salad, Extra Towels, Bottled Water" 
+                          value={roomServiceForm.item}
+                          onChange={(e) => setRoomServiceForm(prev => ({ ...prev, item: e.target.value }))}
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Preferred Time</label>
+                        <Input 
+                          type="time" 
+                          value={roomServiceForm.preferredTime}
+                          onChange={(e) => setRoomServiceForm(prev => ({ ...prev, preferredTime: e.target.value }))}
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <Button 
+                        onClick={handleRoomService}
+                        disabled={!roomServiceForm.item || !roomServiceForm.preferredTime}
+                        className="w-full py-3 rounded-xl text-lg font-medium transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                        style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                      >
+                        <Coffee className="w-5 h-5 mr-2" />
+                        Request Room Service
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+                <div className="h-2" style={{ backgroundColor: '#334443' }}></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                    <MessageSquare className="w-6 h-6" style={{ color: '#34656D' }} />
+                    Recent Requests
+                  </CardTitle>
+                  <CardDescription style={{ color: '#34656D' }}>
+                    Your room service history
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {roomServiceOrders.length === 0 ? (
+                    <div className="text-center py-12">
+                      <MessageSquare className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <p style={{ color: '#34656D' }}>No room service requests yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {roomServiceOrders.map(order => (
+                        <div key={order.id} className="p-4 border rounded-xl transition-all duration-300 hover:shadow-md" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-bold text-lg mb-1" style={{ color: '#334443' }}>{order.item_name}</h4>
+                              <p className="text-sm mb-1" style={{ color: '#34656D' }}>
+                                Preferred time: {order.preferred_time}
+                              </p>
+                              <p className="text-xs" style={{ color: '#34656D' }}>
+                                {new Date(order.created_at!).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <Badge className="px-3 py-1 rounded-full font-medium" style={{ 
+                              backgroundColor: order.status === 'completed' ? '#34656D' : 
+                                order.status === 'in-progress' ? '#FAEAB1' : '#33444320',
+                              color: order.status === 'completed' ? '#FAF8F1' : '#334443'
+                            }}>
+                              {order.status}
+                            </Badge>
                           </div>
-                          <div>
-                            <span className="text-muted-foreground">Check-out:</span>
-                            <p>{new Date(booking.end_date).toLocaleDateString()}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="housekeeping" className="space-y-6 mt-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+                <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                    <Sparkles className="w-6 h-6" style={{ color: '#34656D' }} />
+                    Housekeeping Services
+                  </CardTitle>
+                  <CardDescription style={{ color: '#34656D' }}>
+                    Schedule cleaning or maintenance
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!currentBooking ? (
+                    <div className="text-center py-12">
+                      <Sparkles className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No active booking</h3>
+                      <p style={{ color: '#34656D' }}>
+                        You need an active booking to request housekeeping
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Service Type</label>
+                        <Select 
+                          value={housekeepingForm.serviceType} 
+                          onValueChange={(value) => setHousekeepingForm(prev => ({ ...prev, serviceType: value }))}
+                        >
+                          <SelectTrigger className="rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
+                            <SelectValue placeholder="Select service type" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="refresh">Refresh Room</SelectItem>
+                            <SelectItem value="full">Full Cleaning</SelectItem>
+                            <SelectItem value="maintenance">Maintenance Issue</SelectItem>
+                            <SelectItem value="linen">Linen Change</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Preferred Time</label>
+                        <Input 
+                          type="datetime-local"
+                          value={housekeepingForm.preferredTime}
+                          onChange={(e) => setHousekeepingForm(prev => ({ ...prev, preferredTime: e.target.value }))}
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <Button 
+                        onClick={handleHousekeepingRequest}
+                        disabled={!housekeepingForm.preferredTime}
+                        className="w-full py-3 rounded-xl text-lg font-medium transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                        style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                      >
+                        <Sparkles className="w-5 h-5 mr-2" />
+                        Request Housekeeping
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+                <div className="h-2" style={{ backgroundColor: '#334443' }}></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                    <MessageSquare className="w-6 h-6" style={{ color: '#34656D' }} />
+                    Recent Requests
+                  </CardTitle>
+                  <CardDescription style={{ color: '#34656D' }}>
+                    Your housekeeping history
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {housekeepingRequests.length === 0 ? (
+                    <div className="text-center py-12">
+                      <MessageSquare className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <p style={{ color: '#34656D' }}>No housekeeping requests yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {housekeepingRequests.map(request => (
+                        <div key={request.id} className="p-4 border rounded-xl transition-all duration-300 hover:shadow-md" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-bold text-lg mb-1 capitalize" style={{ color: '#334443' }}>{request.service_type}</h4>
+                              <p className="text-sm mb-1" style={{ color: '#34656D' }}>
+                                Preferred time: {new Date(request.preferred_time).toLocaleString()}
+                              </p>
+                              <p className="text-xs" style={{ color: '#34656D' }}>
+                                {new Date(request.created_at!).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <Badge className="px-3 py-1 rounded-full font-medium" style={{ 
+                              backgroundColor: request.status === 'completed' ? '#34656D' : 
+                                request.status === 'in-progress' ? '#FAEAB1' : '#33444320',
+                              color: request.status === 'completed' ? '#FAF8F1' : '#334443'
+                            }}>
+                              {request.status}
+                            </Badge>
                           </div>
-                          <div>
-                            <span className="text-muted-foreground">Nights:</span>
-                            <p>{booking.days}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="payments" className="space-y-6 mt-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+                <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                    <CreditCard className="w-6 h-6" style={{ color: '#34656D' }} />
+                    Make a Payment
+                  </CardTitle>
+                  <CardDescription style={{ color: '#34656D' }}>
+                    Pay for your stay or additional services
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!currentBooking ? (
+                    <div className="text-center py-12">
+                      <CreditCard className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No active booking</h3>
+                      <p style={{ color: '#34656D' }}>
+                        You need an active booking to make a payment
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Amount (₹)</label>
+                        <Input 
+                          type="number" 
+                          min="1" 
+                          value={paymentForm.amount}
+                          onChange={(e) => setPaymentForm(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                          placeholder="Enter amount"
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Payment Method</label>
+                        <Select 
+                          value={paymentForm.paymentMethod} 
+                          onValueChange={(value) => setPaymentForm(prev => ({ ...prev, paymentMethod: value }))}
+                        >
+                          <SelectTrigger className="rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
+                            <SelectValue placeholder="Select payment method" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="card">Credit/Debit Card</SelectItem>
+                            <SelectItem value="upi">UPI</SelectItem>
+                            <SelectItem value="netbanking">Net Banking</SelectItem>
+                            <SelectItem value="wallet">Wallet</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <Button 
+                        onClick={handlePayment}
+                        disabled={!paymentForm.amount}
+                        className="w-full py-3 rounded-xl text-lg font-medium transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                        style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                      >
+                        <CreditCard className="w-5 h-5 mr-2" />
+                        Process Payment
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+                <div className="h-2" style={{ backgroundColor: '#334443' }}></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                    <CreditCard className="w-6 h-6" style={{ color: '#34656D' }} />
+                    Payment History
+                  </CardTitle>
+                  <CardDescription style={{ color: '#34656D' }}>
+                    Your transaction history
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {payments.length === 0 ? (
+                    <div className="text-center py-12">
+                      <CreditCard className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <p style={{ color: '#34656D' }}>No payments yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {payments.map(payment => (
+                        <div key={payment.id} className="p-4 border rounded-xl transition-all duration-300 hover:shadow-md" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <h4 className="font-bold text-lg mb-1" style={{ color: '#334443' }}>₹{payment.amount}</h4>
+                              <p className="text-sm mb-1 capitalize" style={{ color: '#34656D' }}>
+                                {payment.payment_method} • {payment.status}
+                              </p>
+                              <p className="text-xs" style={{ color: '#34656D' }}>
+                                {new Date(payment.created_at!).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <Badge className="px-3 py-1 rounded-full font-medium" style={{ 
+                              backgroundColor: payment.status === 'completed' ? '#34656D' : '#33444320',
+                              color: payment.status === 'completed' ? '#FAF8F1' : '#334443'
+                            }}>
+                              {payment.status}
+                            </Badge>
                           </div>
-                          <div>
-                            <span className="text-muted-foreground">Total:</span>
-                            <p>₹{booking.rooms.price * booking.days}</p>
-                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="feedback" className="space-y-6 mt-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+                <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                    <Heart className="w-6 h-6" style={{ color: '#34656D' }} />
+                    Share Your Feedback
+                  </CardTitle>
+                  <CardDescription style={{ color: '#34656D' }}>
+                    Help us improve your experience at STAYSYNC
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {!currentBooking ? (
+                    <div className="text-center py-12">
+                      <Heart className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>No active booking</h3>
+                      <p style={{ color: '#34656D' }}>
+                        You need an active booking to submit feedback
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Rating</label>
+                        <div className="flex gap-2">
+                          {[1, 2, 3, 4, 5].map((star) => (
+                            <button
+                              key={star}
+                              onClick={() => setFeedback(prev => ({ ...prev, rating: star }))}
+                              className={`text-3xl transition-all duration-300 transform hover:scale-110 ${
+                                star <= feedback.rating ? 'text-yellow-400' : 'text-gray-300'
+                              }`}
+                            >
+                              ★
+                            </button>
+                          ))}
                         </div>
                       </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+                      
+                      <div>
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Comments</label>
+                        <Textarea
+                          placeholder="Tell us about your experience..."
+                          value={feedback.comment}
+                          onChange={(e) => setFeedback(prev => ({ ...prev, comment: e.target.value }))}
+                          rows={4}
+                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                          style={{ borderColor: '#FAEAB1' }}
+                        />
+                      </div>
+                      
+                      <Button 
+                        onClick={handleFeedbackSubmit}
+                        disabled={!feedback.comment}
+                        className="w-full py-3 rounded-xl text-lg font-medium transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                        style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+                      >
+                        <Heart className="w-5 h-5 mr-2" />
+                        Submit Feedback
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
-            {/* <Card>
-              <CardHeader>
-                <CardTitle>Book a New Room</CardTitle>
-                <CardDescription>
-                  {selectedRoom ? "Complete your reservation" : "Select a room from the floor maps"}
+              <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+                <div className="h-2" style={{ backgroundColor: '#334443' }}></div>
+                <CardHeader className="pb-4">
+                  <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                    <MessageSquare className="w-6 h-6" style={{ color: '#34656D' }} />
+                    Your Feedback History
+                  </CardTitle>
+                  <CardDescription style={{ color: '#34656D' }}>
+                    Reviews you've submitted
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  {feedbacks.length === 0 ? (
+                    <div className="text-center py-12">
+                      <MessageSquare className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
+                      <p style={{ color: '#34656D' }}>No feedback submitted yet</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {feedbacks.map(fb => (
+                        <div key={fb.id} className="p-4 border rounded-xl transition-all duration-300 hover:shadow-md" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                          <div className="flex items-start justify-between mb-3">
+                            <div className="flex gap-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <span
+                                  key={star}
+                                  className={`text-xl ${
+                                    star <= fb.rating ? 'text-yellow-400' : 'text-gray-300'
+                                  }`}
+                                >
+                                  ★
+                                </span>
+                              ))}
+                            </div>
+                            <span className="text-xs" style={{ color: '#34656D' }}>
+                              {new Date(fb.created_at!).toLocaleDateString()}
+                            </span>
+                          </div>
+                          <p className="text-sm" style={{ color: '#334443' }}>{fb.comment}</p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="floor-maps" className="space-y-6 mt-6">
+            <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
+              <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
+                  <MapPin className="w-6 h-6" style={{ color: '#34656D' }} />
+                  Interactive Floor Maps
+                </CardTitle>
+                <CardDescription style={{ color: '#34656D' }}>
+                  Click on any available room to select it for booking
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                {selectedRoom ? (
-                  <div className="space-y-4">
-                    <div className="p-3 bg-muted/30 rounded-lg">
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="font-medium">Room {selectedRoom.id}</span>
-                        <Badge variant="default">
-                          {selectedRoom.room_type}
-                        </Badge>
-                      </div>
-                      <p className="text-lg font-semibold">₹{selectedRoom.price}/night</p>
-                      <p className="text-sm text-muted-foreground">Floor {selectedRoom.floor}</p>
-                    </div>
-                    
-                    <div className="space-y-3">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-1" style={{ color: '#334443' }}>Select a Floor</h3>
+                    <p style={{ color: '#34656D' }}>Rooms are color-coded by availability</p>
+                  </div>
+                  <Select value={selectedFloor.toString()} onValueChange={(v) => setSelectedFloor(Number(v))}>
+                    <SelectTrigger className="w-48 rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
+                      <SelectValue placeholder="Select floor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {floors.map(floor => (
+                        <SelectItem key={floor.number} value={floor.number.toString()}>
+                          {floor.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="border-2 rounded-2xl p-6" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                  <FloorMap 
+                    floorNumber={selectedFloor} 
+                    interactive={true}
+                    onRoomSelect={handleRoomSelect}
+                    selectedRoomId={selectedRoom?.id}
+                  />
+                </div>
+                
+                {selectedRoom && (
+                  <div className="mt-6 p-6 border-2 rounded-2xl transition-all duration-300" style={{ borderColor: '#34656D', backgroundColor: '#FAEAB1' }}>
+                    <div className="flex items-center justify-between">
                       <div>
-                        <label className="text-sm font-medium mb-1 block">Guest Name</label>
-                        <Input 
-                          value={bookingForm.guestName} 
-                          onChange={(e) => setBookingForm(prev => ({ ...prev, guestName: e.target.value }))}
-                          placeholder="Your full name" 
-                        />
+                        <p className="font-bold text-lg mb-1" style={{ color: '#334443' }}>Selected: Room {selectedRoom.id}</p>
+                        <p className="text-sm" style={{ color: '#34656D' }}>
+                          {selectedRoom.room_type} - ₹{selectedRoom.price}/night
+                        </p>
                       </div>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div>
-                          <label className="text-sm font-medium mb-1 block">Check-in</label>
-                          <Input 
-                            type="date" 
-                            value={bookingForm.checkIn}
-                            onChange={(e) => setBookingForm(prev => ({ ...prev, checkIn: e.target.value }))}
-                            min={new Date().toISOString().split('T')[0]}
-                          />
-                        </div>
-                        <div>
-                          <label className="text-sm font-medium mb-1 block">Check-out</label>
-                          <Input 
-                            type="date"
-                            value={bookingForm.checkOut}
-                            onChange={(e) => setBookingForm(prev => ({ ...prev, checkOut: e.target.value }))}
-                            min={bookingForm.checkIn || new Date().toISOString().split('T')[0]}
-                          />
-                        </div>
-                      </div>
-                      
-                      {bookingForm.checkIn && bookingForm.checkOut && (
-                        <div className="p-3 bg-primary/5 rounded-lg">
-                          <div className="flex justify-between">
-                            <span>Total nights:</span>
-                            <span>
-                              {Math.ceil(
-                                (new Date(bookingForm.checkOut).getTime() - 
-                                 new Date(bookingForm.checkIn).getTime()) / 
-                                (1000 * 60 * 60 * 24)
-                              )}
-                            </span>
-                          </div>
-                          <div className="flex justify-between font-semibold mt-1">
-                            <span>Total amount:</span>
-                            <span>
-                              ₹{selectedRoom.price * Math.ceil(
-                                (new Date(bookingForm.checkOut).getTime() - 
-                                 new Date(bookingForm.checkIn).getTime()) / 
-                                (1000 * 60 * 60 * 24)
-                              )}
-                            </span>
-                          </div>
-                        </div>
-                      )}
-                      
                       <Button 
-                        className="w-full" 
-                        onClick={handleBookRoom}
-                        disabled={!bookingForm.guestName || !bookingForm.checkIn || !bookingForm.checkOut}
+                        onClick={() => {
+                          const bookingTab = document.querySelector('[value="bookings"]') as HTMLElement;
+                          bookingTab?.click();
+                        }}
+                        className="rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
+                        style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
                       >
-                        Confirm Booking
+                        Book This Room
                       </Button>
                     </div>
                   </div>
-                ) : (
-                  <div className="text-center py-8">
-                    <MapPin className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold">No room selected</h3>
-                    <p className="text-muted-foreground mt-2 mb-4">
-                      Go to the Maps tab to select a room for booking
-                    </p>
-                    <Button onClick={() => {
-                      const mapsTab = document.querySelector('[value="floor-maps"]') as HTMLElement;
-                      mapsTab?.click();
-                    }}>
-                      View Floor Maps
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card> */}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="room-service" className="space-y-6 mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Room Service</CardTitle>
-                <CardDescription>Order food or amenities to your room</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {!currentBooking ? (
-                  <div className="text-center py-8">
-                    <Utensils className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold">No active booking</h3>
-                    <p className="text-muted-foreground mt-2">
-                      You need an active booking to request room service
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Item Requested</label>
-                      <Input 
-                        placeholder="e.g. Caesar Salad, Extra Towels, Bottled Water" 
-                        value={roomServiceForm.item}
-                        onChange={(e) => setRoomServiceForm(prev => ({ ...prev, item: e.target.value }))}
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Preferred Time</label>
-                      <Input 
-                        type="time" 
-                        value={roomServiceForm.preferredTime}
-                        onChange={(e) => setRoomServiceForm(prev => ({ ...prev, preferredTime: e.target.value }))}
-                      />
-                    </div>
-                    <Button 
-                      onClick={handleRoomService}
-                      disabled={!roomServiceForm.item || !roomServiceForm.preferredTime}
-                      className="w-full"
-                    >
-                      <Utensils className="w-4 h-4 mr-2" />
-                      Request Room Service
-                    </Button>
-                  </div>
                 )}
               </CardContent>
             </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Requests</CardTitle>
-                <CardDescription>Your room service history</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {roomServiceOrders.length === 0 ? (
-                  <div className="text-center py-8">
-                    <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No room service requests yet</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {roomServiceOrders.map(order => (
-                      <div key={order.id} className="p-3 border rounded-lg">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium">{order.item_name}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Preferred time: {order.preferred_time}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(order.created_at!).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <Badge variant={
-                            order.status === 'completed' ? 'default' : 
-                            order.status === 'in-progress' ? 'secondary' : 'outline'
-                          }>
-                            {order.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="housekeeping" className="space-y-6 mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Housekeeping Services</CardTitle>
-                <CardDescription>Schedule cleaning or maintenance</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {!currentBooking ? (
-                  <div className="text-center py-8">
-                    <Sparkles className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold">No active booking</h3>
-                    <p className="text-muted-foreground mt-2">
-                      You need an active booking to request housekeeping
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Service Type</label>
-                      <Select 
-                        value={housekeepingForm.serviceType} 
-                        onValueChange={(value) => setHousekeepingForm(prev => ({ ...prev, serviceType: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select service type" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="refresh">Refresh Room</SelectItem>
-                          <SelectItem value="full">Full Cleaning</SelectItem>
-                          <SelectItem value="maintenance">Maintenance Issue</SelectItem>
-                          <SelectItem value="linen">Linen Change</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Preferred Time</label>
-                      <Input 
-                        type="datetime-local"
-                        value={housekeepingForm.preferredTime}
-                        onChange={(e) => setHousekeepingForm(prev => ({ ...prev, preferredTime: e.target.value }))}
-                      />
-                    </div>
-                    <Button 
-                      onClick={handleHousekeepingRequest}
-                      disabled={!housekeepingForm.preferredTime}
-                      className="w-full"
-                    >
-                      <Sparkles className="w-4 h-4 mr-2" />
-                      Request Housekeeping
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Recent Requests</CardTitle>
-                <CardDescription>Your housekeeping history</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {housekeepingRequests.length === 0 ? (
-                  <div className="text-center py-8">
-                    <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No housekeeping requests yet</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {housekeepingRequests.map(request => (
-                      <div key={request.id} className="p-3 border rounded-lg">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium capitalize">{request.service_type}</h4>
-                            <p className="text-sm text-muted-foreground">
-                              Preferred time: {new Date(request.preferred_time).toLocaleString()}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(request.created_at!).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <Badge variant={
-                            request.status === 'completed' ? 'default' : 
-                            request.status === 'in-progress' ? 'secondary' : 'outline'
-                          }>
-                            {request.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="payments" className="space-y-6 mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Make a Payment</CardTitle>
-                <CardDescription>Pay for your stay or additional services</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {!currentBooking ? (
-                  <div className="text-center py-8">
-                    <CreditCard className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold">No active booking</h3>
-                    <p className="text-muted-foreground mt-2">
-                      You need an active booking to make a payment
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Amount (₹)</label>
-                      <Input 
-                        type="number" 
-                        min="1" 
-                        value={paymentForm.amount}
-                        onChange={(e) => setPaymentForm(prev => ({ ...prev, amount: Number(e.target.value) }))}
-                        placeholder="Enter amount"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium mb-1 block">Payment Method</label>
-                      <Select 
-                        value={paymentForm.paymentMethod} 
-                        onValueChange={(value) => setPaymentForm(prev => ({ ...prev, paymentMethod: value }))}
-                      >
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select payment method" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="card">Credit/Debit Card</SelectItem>
-                          <SelectItem value="upi">UPI</SelectItem>
-                          <SelectItem value="netbanking">Net Banking</SelectItem>
-                          <SelectItem value="wallet">Wallet</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <Button 
-                      onClick={handlePayment}
-                      disabled={!paymentForm.amount}
-                      className="w-full"
-                    >
-                      <CreditCard className="w-4 h-4 mr-2" />
-                      Process Payment
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Payment History</CardTitle>
-                <CardDescription>Your transaction history</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {payments.length === 0 ? (
-                  <div className="text-center py-8">
-                    <CreditCard className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No payments yet</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {payments.map(payment => (
-                      <div key={payment.id} className="p-3 border rounded-lg">
-                        <div className="flex justify-between items-start">
-                          <div>
-                            <h4 className="font-medium">₹{payment.amount}</h4>
-                            <p className="text-sm text-muted-foreground capitalize">
-                              {payment.payment_method} • {payment.status}
-                            </p>
-                            <p className="text-xs text-muted-foreground">
-                              {new Date(payment.created_at!).toLocaleDateString()}
-                            </p>
-                          </div>
-                          <Badge variant={payment.status === 'completed' ? 'default' : 'outline'}>
-                            {payment.status}
-                          </Badge>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="feedback" className="space-y-6 mt-6">
-          <div className="grid gap-6 lg:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Share Your Feedback</CardTitle>
-                <CardDescription>Help us improve your experience at STAYSYNC</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {!currentBooking ? (
-                  <div className="text-center py-8">
-                    <Star className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <h3 className="text-lg font-semibold">No active booking</h3>
-                    <p className="text-muted-foreground mt-2">
-                      You need an active booking to submit feedback
-                    </p>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Rating</label>
-                      <div className="flex gap-1">
-                        {[1, 2, 3, 4, 5].map((star) => (
-                          <button
-                            key={star}
-                            onClick={() => setFeedback(prev => ({ ...prev, rating: star }))}
-                            className={`text-2xl transition-colors ${
-                              star <= feedback.rating ? 'text-yellow-400' : 'text-gray-300'
-                            }`}
-                          >
-                            ★
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm font-medium mb-2 block">Comments</label>
-                      <Textarea
-                        placeholder="Tell us about your experience..."
-                        value={feedback.comment}
-                        onChange={(e) => setFeedback(prev => ({ ...prev, comment: e.target.value }))}
-                        rows={4}
-                      />
-                    </div>
-                    
-                    <Button 
-                      onClick={handleFeedbackSubmit}
-                      disabled={!feedback.comment}
-                      className="w-full"
-                    >
-                      <Star className="w-4 h-4 mr-2" />
-                      Submit Feedback
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Your Feedback History</CardTitle>
-                <CardDescription>Reviews you've submitted</CardDescription>
-              </CardHeader>
-              <CardContent>
-                {feedbacks.length === 0 ? (
-                  <div className="text-center py-8">
-                    <MessageSquare className="w-12 h-12 mx-auto text-muted-foreground mb-4" />
-                    <p className="text-muted-foreground">No feedback submitted yet</p>
-                  </div>
-                ) : (
-                  <div className="space-y-3">
-                    {feedbacks.map(fb => (
-                      <div key={fb.id} className="p-3 border rounded-lg">
-                        <div className="flex items-start justify-between mb-2">
-                          <div className="flex gap-1">
-                            {[1, 2, 3, 4, 5].map((star) => (
-                              <span
-                                key={star}
-                                className={`text-lg ${
-                                  star <= fb.rating ? 'text-yellow-400' : 'text-gray-300'
-                                }`}
-                              >
-                                ★
-                              </span>
-                            ))}
-                          </div>
-                          <span className="text-xs text-muted-foreground">
-                            {new Date(fb.created_at!).toLocaleDateString()}
-                          </span>
-                        </div>
-                        <p className="text-sm">{fb.comment}</p>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="floor-maps" className="space-y-6 mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Interactive Floor Maps</CardTitle>
-              <CardDescription>Click on any available room to select it for booking</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center justify-between mb-4">
-                <div>
-                  <h3 className="text-lg font-semibold">Select a Floor</h3>
-                  <p className="text-muted-foreground">Rooms are color-coded by availability</p>
-                </div>
-                <Select value={selectedFloor.toString()} onValueChange={(v) => setSelectedFloor(Number(v))}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Select floor" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {floors.map(floor => (
-                      <SelectItem key={floor.number} value={floor.number.toString()}>
-                        {floor.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="border rounded-lg p-4 bg-muted/20">
-                <FloorMap 
-                  floorNumber={selectedFloor} 
-                  interactive={true}
-                  onRoomSelect={handleRoomSelect}
-                  selectedRoomId={selectedRoom?.id}
-                />
-              </div>
-              
-              {selectedRoom && (
-                <div className="mt-4 p-4 border rounded-lg bg-primary/5">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">Selected: Room {selectedRoom.id}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {selectedRoom.room_type} - ₹{selectedRoom.price}/night
-                      </p>
-                    </div>
-                    <Button onClick={() => {
-                      const bookingTab = document.querySelector('[value="bookings"]') as HTMLElement;
-                      bookingTab?.click();
-                    }}>
-                      Book This Room
-                    </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+      <style jsx>{`
+        @keyframes blob {
+          0% {
+            transform: translate(0px, 0px) scale(1);
+          }
+          33% {
+            transform: translate(30px, -50px) scale(1.1);
+          }
+          66% {
+            transform: translate(-20px, 20px) scale(0.9);
+          }
+          100% {
+            transform: translate(0px, 0px) scale(1);
+          }
+        }
+        .animate-blob {
+          animation: blob 7s infinite;
+        }
+        .animation-delay-2000 {
+          animation-delay: 2s;
+        }
+        .animation-delay-4000 {
+          animation-delay: 4s;
+        }
+      `}</style>
     </main>
   );
 };
