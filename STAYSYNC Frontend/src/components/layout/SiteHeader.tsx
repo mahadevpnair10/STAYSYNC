@@ -34,7 +34,7 @@ const SiteHeader = () => {
 
   return (
     <header className="flex items-center justify-between p-4 shadow-md bg-white">
-      <Link to="/" className="text-2xl font-bold text-blue-600">
+      <Link to="/" className="text-2xl font-bold text-green-900">
         StaySync
       </Link>
 

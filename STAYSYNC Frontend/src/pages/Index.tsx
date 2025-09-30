@@ -143,10 +143,12 @@ const Index = () => {
                 </Link>
               )}
               {user?.role === "admin" && (
+                <div className="flex space-x-4"> {/* flex with gap between buttons */}
+                {/* Admin Portal Button (transparent style) */}
                 <Link to="/admin">
                   <Button
-                    size="lg"
-                    className="group rounded-lg px-8 py-6 text-lg font-medium border-2 transition-all hover:shadow-lg"
+                    size="md" // smaller than lg
+                    className="group rounded-lg px-6 py-4 text-base font-medium border-2 transition-all hover:shadow-lg"
                     style={{
                       backgroundColor: "transparent",
                       color: "#34656D",
@@ -158,6 +160,25 @@ const Index = () => {
                     <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
                   </Button>
                 </Link>
+
+                {/* Forecast Portal Button (filled style) */}
+                <Link to="/forecast">
+                  <Button
+                    size="md"
+                    className="group rounded-lg px-6 py-4 text-base font-medium border-2 transition-all hover:shadow-lg"
+                    style={{
+                      backgroundColor: "#34656D", // filled
+                      color: "white",
+                      borderColor: "#34656D",
+                    }}
+                  >
+                    <BedDouble className="mr-2 h-5 w-5 transition-transform group-hover:scale-110" />
+                    Open Forecast Portal
+                    <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                  </Button>
+                </Link>
+              </div>
+
               )}
 
               {!user && (
