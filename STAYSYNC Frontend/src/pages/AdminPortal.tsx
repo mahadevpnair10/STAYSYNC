@@ -230,6 +230,8 @@ const AdminPortal = () => {
             .in('property_id', hotelIds)
             .order('created_at', { ascending: false });
 
+
+
           if (housekeepingError) throw housekeepingError;
           setHousekeepingRequests(housekeepingData || []);
 
@@ -928,18 +930,32 @@ const AdminPortal = () => {
                     <p style={{ color: '#34656D' }}>Add latitude and longitude coordinates to your hotels to view them on the map</p>
                   </div>
                 ) : (
-                  <div className="border-2 rounded-2xl p-6 h-96 flex items-center justify-center" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
-                    <div className="text-center">
-                      <MapPin className="w-16 h-16 mx-auto mb-4" style={{ color: '#34656D' }} />
-                      <h3 className="text-xl font-semibold mb-2" style={{ color: '#334443' }}>OpenStreetMap Integration</h3>
-                      <p style={{ color: '#34656D' }} className="mb-4">
-                        {hotels.filter(h => h.latitude && h.longitude).length} hotel(s) with location data
-                      </p>
-                      <p className="text-sm" style={{ color: '#34656D' }}>
-                        In a production environment, this would display an interactive map<br />
-                        showing all your hotel locations using OpenStreetMap.
-                      </p>
-                    </div>
+                  <div
+                    className="border-2 rounded-2xl overflow-hidden h-96"
+                    style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}
+                  >
+                    {(() => {
+                      const firstHotel = hotels.find(h => h.latitude && h.longitude);
+                      if (!firstHotel) return null;
+                      // Ensure values are safe for URL (they might be strings or numbers)
+                      const lat = encodeURIComponent(firstHotel.latitude);
+                      const lng = encodeURIComponent(firstHotel.longitude);
+                      // Google Maps embed centered on the first hotel's coordinates
+                      const src = `https://www.google.com/maps?q=${lat},${lng}&z=14&output=embed`;
+
+                      return (
+                        <iframe
+                          title="Hotel Map"
+                          src={src}
+                          width="100%"
+                          height="100%"
+                          style={{ border: 0 }}
+                          loading="lazy"
+                          allowFullScreen
+                          referrerPolicy="no-referrer-when-downgrade"
+                        />
+                      );
+                    })()}
                   </div>
                 )}
 
