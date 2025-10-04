@@ -10,15 +10,24 @@ import { DayPicker } from "react-day-picker";
 import type { DateRange } from "react-day-picker";
 import "react-day-picker/dist/style.css";
 
-type Hotel = {
+interface Hotel {
   property_id: number;
   property_name: string;
-  star_rating?: number;
   property_type?: string;
-  distance_from_center?: number;
+  star_rating?: number;
+  address: string;
   town?: string;
   state?: string;
-};
+  pincode: number;
+  latitude: number;
+  longitude: number;
+  free_wifi: boolean;
+  entire_property: boolean;
+  built_year?: number;
+  distance_from_center?: number;
+  admin_id?: string;
+  created_at: string;
+}
 
 type Room = {
   id: number;
@@ -339,6 +348,15 @@ export default function HotelPage() {
   if (loading) return <div style={{ padding: 32, textAlign: "center", color: TEXT }}>Loading hotel...</div>;
   if (!hotel) return <div style={{ padding: 32, textAlign: "center", color: TEXT }}>Hotel not found.</div>;
 
+  // Build map iframe src safely
+  const latVal = hotel?.latitude;
+  const lngVal = hotel?.longitude;
+  const latNum = typeof latVal === "string" ? parseFloat(latVal) : latVal;
+  const lngNum = typeof lngVal === "string" ? parseFloat(lngVal) : lngVal;
+  const coordsValid =
+    typeof latNum === "number" && typeof lngNum === "number" && isFinite(latNum as number) && isFinite(lngNum as number);
+  const mapSrc = coordsValid ? `https://www.google.com/maps?q=${encodeURIComponent(String(latNum))},${encodeURIComponent(String(lngNum))}&z=14&output=embed` : "";
+
   return (
     <main style={{ background: BG, minHeight: "100vh", color: TEXT }}>
       <div className="container mx-auto px-4 py-8">
@@ -421,6 +439,41 @@ export default function HotelPage() {
             </div>
           </div>
         </div>
+
+        {/* ---------------- Map iframe inserted here ---------------- */}
+        <div style={{ marginBottom: 20 }}>
+          {coordsValid ? (
+            <div
+              className="border-2 rounded-2xl overflow-hidden h-96"
+              style={{ borderColor: ACCENT, backgroundColor: BG }}
+            >
+              <iframe
+                title={`Hotel ${hotel.property_name} Map`}
+                src={mapSrc}
+                width="100%"
+                height="100%"
+                style={{ border: 0 }}
+                loading="lazy"
+                allowFullScreen
+                referrerPolicy="no-referrer-when-downgrade"
+              />
+            </div>
+          ) : (
+            <div
+              className="border-2 rounded-2xl h-96 flex items-center justify-center text-center"
+              style={{ borderColor: ACCENT, backgroundColor: BG }}
+            >
+              <div>
+                <div style={{ width: 64, height: 64, borderRadius: 12, margin: "0 auto 12px", backgroundColor: `${PRIMARY}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <div style={{ width: 18, height: 18, borderRadius: 9, backgroundColor: PRIMARY }} />
+                </div>
+                <h3 style={{ color: TEXT, fontSize: 18, fontWeight: 600, marginBottom: 6 }}>No location data</h3>
+                <p style={{ color: PRIMARY }}>This hotel does not have latitude/longitude coordinates.</p>
+              </div>
+            </div>
+          )}
+        </div>
+        {/* --------------------------------------------------------- */}
 
         {/* Rooms grid (compact cards, draggable) */}
         <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
