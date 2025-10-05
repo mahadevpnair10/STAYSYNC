@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stripe Payment Demo</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .product {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .product img {
+            width: 100px;
+            height: 150px;
+            object-fit: cover;
+            margin-right: 20px;
+        }
+        .description h3 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+        .description h5 {
+            margin: 0;
+            color: #666;
+            font-size: 18px;
+        }
+        button {
+            background-color: #635bff;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #5a52e0;
+        }
+        .message {
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 4px;
+            background-color: #f0f8ff;
+            border: 1px solid #0066cc;
+        }
+    </style>
+</head>
+<body>
+    <h1>Stripe Payment Demo</h1>
+    
+    <div id="message"></div>
+    
+    <section>
+        <div class="product">
+            <img src="https://i.imgur.com/EHyR2nP.png" alt="The cover of Stubborn Attachments">
+            <div class="description">
+                <h3>Stubborn Attachments</h3>
+                <h5>$20.00</h5>
+            </div>
+        </div>
+        <form action="/create-checkout-session" method="POST">
+            <button type="submit">Checkout</button>
+        </form>
+    </section>
+
+    <script>
+        // Check URL parameters for success/cancel messages
+        const urlParams = new URLSearchParams(window.location.search);
+        const messageDiv = document.getElementById('message');
+        
+        if (urlParams.get('success')) {
+            messageDiv.innerHTML = '<div class="message">Order placed! You will receive an email confirmation.</div>';
+        }
+        
+        if (urlParams.get('canceled')) {
+            messageDiv.innerHTML = '<div class="message">Order canceled -- continue to shop around and checkout when you\'re ready.</div>';
+        }
+    </script>
+</body>
+</html>

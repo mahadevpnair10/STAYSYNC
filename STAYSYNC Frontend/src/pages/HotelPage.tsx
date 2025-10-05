@@ -254,7 +254,7 @@ export default function HotelPage() {
           end_date: endDate,
           days: nights,
         },
-      ]);
+      ]).select();
       if (error) {
         console.error(error);
         setErrorMsg(error.message || "Failed to book. Please try again.");
@@ -274,7 +274,27 @@ export default function HotelPage() {
         setRooms((roomsData as Room[]) || []);
 
         closeModal();
-        alert("Booking created — your reservation is saved. You can complete payment later.");
+        
+        // Calculate total cost for the booking
+        const totalCost = nights * selectedRoom.price;
+        
+        // Store booking details for payment processing
+        const bookingId = data && data.length > 0 ? data[0].id : null;
+        localStorage.setItem('newBookingForPayment', JSON.stringify({
+          bookingId: bookingId,
+          roomType: selectedRoom.room_type,
+          hotelName: hotel?.property_name,
+          nights: nights,
+          pricePerNight: selectedRoom.price,
+          totalCost: totalCost,
+          startDate: startDate,
+          endDate: endDate,
+          roomId: selectedRoom.id,
+          userId: userId
+        }));
+        
+        // Redirect to UserPortal payments tab
+        navigate('/user?tab=payments&booking=new');
       }
     } catch (e) {
       console.error(e);

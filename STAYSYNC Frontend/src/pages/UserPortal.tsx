@@ -138,6 +138,7 @@ const UserPortal = () => {
   const [housekeepingRequests, setHousekeepingRequests] = useState<HousekeepingRequest[]>([]);
   const [payments, setPayments] = useState<Payment[]>([]);
   const [feedbacks, setFeedbacks] = useState<Feedback[]>([]);
+  const [activeTab, setActiveTab] = useState("bookings");
 
   // Fetch user data and related information
   useEffect(() => {
@@ -251,6 +252,100 @@ const UserPortal = () => {
 
     fetchUserData();
   }, [toast]);
+
+  // Handle payment return from Stripe
+  useEffect(() => {
+    const refreshPaymentsAfterReturn = async () => {
+      // Check if user just returned from payment (success or cancel)
+      const urlParams = new URLSearchParams(window.location.search);
+      const paymentId = urlParams.get('payment_id');
+      const sessionId = urlParams.get('session_id');
+      
+      if (paymentId || sessionId) {
+        // Refresh payments data
+        try {
+          const { data: { user: authUser } } = await supabase.auth.getUser();
+          if (authUser) {
+            const { data: paymentData, error: paymentError } = await supabase
+              .from('payments')
+              .select('*')
+              .eq('user_id', authUser.id)
+              .order('created_at', { ascending: false });
+
+            if (!paymentError && paymentData) {
+              setPayments(paymentData);
+            }
+          }
+        } catch (error) {
+          console.error('Error refreshing payments:', error);
+        }
+
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    refreshPaymentsAfterReturn();
+  }, []);
+
+  // Handle new booking from HotelPage
+  useEffect(() => {
+    const handleNewBookingFromHotel = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const tabParam = urlParams.get('tab');
+      const bookingParam = urlParams.get('booking');
+      
+      if (tabParam === 'payments' && bookingParam === 'new') {
+        // Switch to payments tab
+        setActiveTab('payments');
+        
+        // Check for new booking data in localStorage
+        const newBookingData = localStorage.getItem('newBookingForPayment');
+        if (newBookingData) {
+          try {
+            const bookingInfo = JSON.parse(newBookingData);
+            
+            // Pre-fill payment form with booking cost
+            setPaymentForm(prev => ({
+              ...prev,
+              amount: bookingInfo.totalCost
+            }));
+            
+            // Show success message
+            toast({
+              title: "Booking Confirmed!",
+              description: `${bookingInfo.roomType} booked for ${bookingInfo.nights} night(s). Please complete your payment of ₹${bookingInfo.totalCost}.`,
+            });
+            
+            // Clean up localStorage
+            localStorage.removeItem('newBookingForPayment');
+          } catch (error) {
+            console.error('Error parsing new booking data:', error);
+          }
+        }
+        
+        // Clean up URL parameters
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    };
+
+    handleNewBookingFromHotel();
+  }, [toast]);
+
+  // Auto-populate payment amount based on current booking
+  useEffect(() => {
+    if (currentBooking && currentBooking.rooms && currentBooking.rooms.price) {
+      const bookingTotal = currentBooking.days * currentBooking.rooms.price;
+      
+      // Only auto-fill if amount is currently 0 or not set
+      if (paymentForm.amount === 0) {
+        setPaymentForm(prev => ({
+          ...prev,
+          amount: bookingTotal
+        }));
+      }
+    }
+  }, [currentBooking, paymentForm.amount]);
 
   // Room Service Request Handler
   const handleRoomService = async () => {
@@ -421,7 +516,17 @@ const UserPortal = () => {
       return;
     }
 
+    if (!paymentForm.amount || paymentForm.amount <= 0) {
+      toast({
+        title: "Invalid amount",
+        description: "Please enter a valid amount",
+        variant: "destructive"
+      });
+      return;
+    }
+
     try {
+      // First create a pending payment record
       const { data, error } = await supabase
         .from('payments')
         .insert({
@@ -429,25 +534,32 @@ const UserPortal = () => {
           user_id: user.id,
           amount: paymentForm.amount,
           payment_method: paymentForm.paymentMethod,
-          status: 'completed'
+          status: 'pending'
         })
         .select()
         .single();
 
       if (error) throw error;
 
-      setPayments(prev => [data, ...prev]);
-      setPaymentForm({ amount: 0, paymentMethod: "card" });
-      
-      toast({
-        title: "Payment successful!",
-        description: `Your payment of ₹${paymentForm.amount} has been processed.`
-      });
+      // Store payment data in localStorage for Stripe session
+      localStorage.setItem('pendingPayment', JSON.stringify({
+        paymentId: data.id,
+        amount: paymentForm.amount,
+        bookingId: currentBooking.id,
+        userId: user.id,
+        hotelName: currentBooking.rooms.hotel?.property_name || 'Hotel Stay',
+        roomType: currentBooking.rooms.room_type
+      }));
+
+      // Redirect to Stripe payment page
+      const stripeUrl = `http://localhost:4242/create-checkout-session?amount=${paymentForm.amount * 100}&currency=inr&paymentId=${data.id}`;
+      window.location.href = stripeUrl;
+
     } catch (error) {
-      console.error('Error processing payment:', error);
+      console.error('Error initiating payment:', error);
       toast({
         title: "Error",
-        description: "Failed to process payment",
+        description: "Failed to initiate payment",
         variant: "destructive"
       });
     }
@@ -512,15 +624,43 @@ const UserPortal = () => {
         };
 
         setBookings(prev => [completeBooking, ...prev]);
+        
+        // Set as current booking if it's for today or future dates
+        const today = new Date().toISOString().split('T')[0];
+        if (completeBooking.start_date <= today && completeBooking.end_date >= today) {
+          setCurrentBooking(completeBooking);
+        } else if (completeBooking.start_date >= today) {
+          // If it's a future booking and no current booking exists, set it
+          if (!currentBooking) {
+            setCurrentBooking(completeBooking);
+          }
+        }
       } else {
         setBookings(prev => [bookingData, ...prev]);
+        
+        // Set as current booking if no current booking exists
+        if (!currentBooking) {
+          setCurrentBooking(bookingData);
+        }
       }
 
       setBookingForm({ guestName: "", checkIn: "", checkOut: "" });
       
+      // Calculate total booking cost
+      const totalCost = days * selectedRoom.price;
+      
+      // Set up payment form with booking cost
+      setPaymentForm(prev => ({ 
+        ...prev, 
+        amount: totalCost 
+      }));
+      
+      // Switch to payments tab
+      setActiveTab("payments");
+      
       toast({ 
         title: "Booking confirmed!", 
-        description: `Room ${selectedRoom.id} booked successfully.` 
+        description: `Room ${selectedRoom.id} booked successfully. Please complete your payment of ₹${totalCost}.` 
       });
     } catch (error) {
       console.error('Error booking room:', error);
@@ -624,7 +764,7 @@ const UserPortal = () => {
           </Card>
         )}
 
-        <Tabs defaultValue="bookings" className="mt-8">
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
           <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-3 p-2 h-auto rounded-2xl" style={{ backgroundColor: '#FAEAB1' }}>
             <TabsTrigger 
               value="bookings" 
@@ -1017,34 +1157,83 @@ const UserPortal = () => {
                     </div>
                   ) : (
                     <div className="space-y-6">
+                      {/* Booking Summary */}
+                      {currentBooking && (
+                        <div className="p-4 rounded-lg border-2" style={{ backgroundColor: '#FAF8F1', borderColor: '#FAEAB1' }}>
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="font-semibold" style={{ color: '#334443' }}>Booking Summary</h4>
+                            <span className="text-xs px-2 py-1 rounded-full" style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}>
+                              Auto-calculated
+                            </span>
+                          </div>
+                          <div className="space-y-1 text-sm">
+                            <p><strong>Room:</strong> {currentBooking.rooms.room_type}</p>
+                            <p><strong>Hotel:</strong> {currentBooking.rooms.hotel?.property_name}</p>
+                            <p><strong>Duration:</strong> {currentBooking.days} day(s)</p>
+                            <p><strong>Rate:</strong> ₹{currentBooking.rooms.price}/night</p>
+                            <p><strong>Check-in:</strong> {new Date(currentBooking.start_date).toLocaleDateString()}</p>
+                            <p><strong>Check-out:</strong> {new Date(currentBooking.end_date).toLocaleDateString()}</p>
+                            <div className="border-t pt-2 mt-2" style={{ borderColor: '#FAEAB1' }}>
+                              <p className="font-semibold text-lg flex justify-between" style={{ color: '#34656D' }}>
+                                <span>Total Amount:</span>
+                                <span>₹{currentBooking.days * currentBooking.rooms.price}</span>
+                              </p>
+                              <p className="text-xs" style={{ color: '#34656D' }}>
+                                ({currentBooking.days} nights × ₹{currentBooking.rooms.price})
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
                       <div>
-                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Amount (₹)</label>
-                        <Input 
-                          type="number" 
-                          min="1" 
-                          value={paymentForm.amount}
-                          onChange={(e) => setPaymentForm(prev => ({ ...prev, amount: Number(e.target.value) }))}
-                          placeholder="Enter amount"
-                          className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
-                          style={{ borderColor: '#FAEAB1' }}
-                        />
+                        <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>
+                          Payment Amount (₹)
+                        </label>
+                        <div className="space-y-2">
+                          <Input 
+                            type="number" 
+                            min="1" 
+                            value={paymentForm.amount}
+                            onChange={(e) => setPaymentForm(prev => ({ ...prev, amount: Number(e.target.value) }))}
+                            placeholder="Amount auto-calculated"
+                            className="rounded-lg border-2 transition-colors focus:border-[#34656D]"
+                            style={{ borderColor: '#FAEAB1' }}
+                          />
+                          <div className="flex justify-between items-center">
+                            {currentBooking && (
+                              <button
+                                type="button"
+                                onClick={() => setPaymentForm(prev => ({ 
+                                  ...prev, 
+                                  amount: currentBooking.days * currentBooking.rooms.price 
+                                }))}
+                                className="text-xs px-3 py-1 rounded-full transition-colors hover:bg-opacity-80"
+                                style={{ backgroundColor: '#FAEAB1', color: '#334443' }}
+                              >
+                                Use Full Amount (₹{currentBooking.days * currentBooking.rooms.price})
+                              </button>
+                            )}
+                            {currentBooking && paymentForm.amount === (currentBooking.days * currentBooking.rooms.price) && (
+                              <p className="text-xs text-green-600 flex items-center gap-1">
+                                <span>✓</span> Full booking amount
+                              </p>
+                            )}
+                          </div>
+                        </div>
                       </div>
                       <div>
                         <label className="text-sm font-medium mb-2 block" style={{ color: '#334443' }}>Payment Method</label>
-                        <Select 
-                          value={paymentForm.paymentMethod} 
-                          onValueChange={(value) => setPaymentForm(prev => ({ ...prev, paymentMethod: value }))}
-                        >
-                          <SelectTrigger className="rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
-                            <SelectValue placeholder="Select payment method" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="card">Credit/Debit Card</SelectItem>
-                            <SelectItem value="upi">UPI</SelectItem>
-                            <SelectItem value="netbanking">Net Banking</SelectItem>
-                            <SelectItem value="wallet">Wallet</SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <div className="p-3 rounded-lg border-2 flex items-center gap-3" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
+                          <CreditCard className="w-5 h-5" style={{ color: '#34656D' }} />
+                          <span className="font-medium" style={{ color: '#334443' }}>Credit/Debit Card</span>
+                          <span className="text-xs px-2 py-1 rounded-full ml-auto" style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}>
+                            Secure
+                          </span>
+                        </div>
+                        <p className="text-xs mt-1" style={{ color: '#34656D' }}>
+                          Payment processed securely via Stripe
+                        </p>
                       </div>
                       <Button 
                         onClick={handlePayment}
@@ -1053,7 +1242,10 @@ const UserPortal = () => {
                         style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
                       >
                         <CreditCard className="w-5 h-5 mr-2" />
-                        Process Payment
+                        {paymentForm.amount > 0 
+                          ? `Pay ₹${paymentForm.amount}` 
+                          : 'Process Payment'
+                        }
                       </Button>
                     </div>
                   )}
