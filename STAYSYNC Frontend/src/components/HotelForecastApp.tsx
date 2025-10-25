@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { TrendingUp, MapPin, Calendar, DollarSign, Hotel, BarChart3, Loader2, Search, Building2, Star, Waves } from 'lucide-react';
+import { IndianRupee } from "lucide-react";
 
 // Color theme constants
 const COLORS = {
@@ -137,7 +138,7 @@ const HotelForecastApp = () => {
         if (fallbackResponse.ok) {
           const fallbackData = await fallbackResponse.json();
           setProperties(fallbackData);
-          setError('Loaded properties from backup source.');
+          // setError('Loaded properties from backup source.');
         }
       } catch (fallbackErr) {
         console.error('Fallback API Error:', fallbackErr);
@@ -226,7 +227,7 @@ const HotelForecastApp = () => {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: 'INR',
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
@@ -383,12 +384,12 @@ const HotelForecastApp = () => {
                     {/* ADR Input */}
                     <div>
                       <label className="block text-sm font-semibold mb-3" style={{ color: COLORS.secondary }}>
-                        <DollarSign className="inline w-4 h-4 mr-1" />
+                        <IndianRupee className="inline w-4 h-4 mr-1" />
                         Average Daily Rate (ADR)
                       </label>
                       <div className="relative">
                         <div className="absolute left-4 top-4 w-5 h-5 flex items-center justify-center rounded-full" style={{ backgroundColor: COLORS.accent }}>
-                          <DollarSign className="w-3 h-3" style={{ color: COLORS.primary }} />
+                          <IndianRupee className="w-3 h-3" style={{ color: COLORS.primary }} />
                         </div>
                         <input
                           type="number"
@@ -476,7 +477,7 @@ const HotelForecastApp = () => {
                     <CardHeader className="pb-2">
                       <div className="flex items-center gap-3">
                         <div className="p-2 rounded-xl" style={{ backgroundColor: `${COLORS.accent}80` }}>
-                          <DollarSign className="w-6 h-6" style={{ color: COLORS.primary }} />
+                          <IndianRupee className="w-6 h-6" style={{ color: COLORS.primary }} />
                         </div>
                         <CardTitle>Projected Revenue</CardTitle>
                       </div>

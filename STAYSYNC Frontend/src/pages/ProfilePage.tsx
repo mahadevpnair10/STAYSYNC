@@ -35,6 +35,10 @@ const Profile = () => {
   const [phoneVerificationSent, setPhoneVerificationSent] = useState(false);
   const [verificationCode, setVerificationCode] = useState("");
   const [isVerifyingPhone, setIsVerifyingPhone] = useState(false);
+  const [isSendingOtp, setIsSendingOtp] = useState(false);
+
+  // Edge function URL
+  const OTP_FUNCTION_URL = "https://pyxpulmqxslhegngzlac.supabase.co/functions/v1/otp";
 
   // Load user data on component mount
   useEffect(() => {
@@ -45,16 +49,17 @@ const Profile = () => {
     try {
       setLoading(true);
       
-      // Get current user from auth
+      // Get current user from auth with session refresh
       const { data: { user: authUser }, error: authError } = await supabase.auth.getUser();
       
       if (authError || !authUser) {
+        console.error("Auth error:", authError);
         throw new Error("Not authenticated");
       }
 
       setUser(authUser);
 
-      // Get profile from database
+      // Get profile from database with proper error handling
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
@@ -63,12 +68,32 @@ const Profile = () => {
 
       if (profileError) {
         console.error("Profile fetch error:", profileError);
-        toast({
-          title: "Error loading profile",
-          description: "Could not load profile data. Please try refreshing the page.",
-          variant: "destructive",
-        });
-        return;
+        
+        // Handle specific error cases
+        if (profileError.code === 'PGRST116' || profileError.message?.includes('0 rows')) {
+          toast({
+            title: "Profile not found",
+            description: "Your user profile could not be loaded. Please contact support.",
+            variant: "destructive",
+          });
+          return;
+        }
+        
+        // Handle API key/auth errors
+        if (profileError.message?.includes('API key') || profileError.code === 406) {
+          toast({
+            title: "Authentication Error",
+            description: "Please log in again to refresh your session.",
+            variant: "destructive",
+          });
+          // Redirect to login
+          setTimeout(() => {
+            window.location.href = "/login";
+          }, 2000);
+          return;
+        }
+
+        throw profileError;
       }
 
       // Set profile data
@@ -84,14 +109,10 @@ const Profile = () => {
     } catch (error) {
       console.error("Error loading user data:", error);
       toast({
-        title: "Authentication Error",
-        description: "Please log in again to access your profile.",
+        title: "Error Loading Profile",
+        description: "Could not load your profile data. Please try refreshing the page.",
         variant: "destructive",
       });
-      // Redirect to login if not authenticated
-      setTimeout(() => {
-        window.location.href = "/login";
-      }, 2000);
     } finally {
       setLoading(false);
     }
@@ -232,14 +253,20 @@ const Profile = () => {
       // Update local state
       setOriginalPhone(phone.trim() || "");
       
-      // Update localStorage
-      const storedUser = JSON.parse(localStorage.getItem('staysync_user') || '{}');
-      const updatedUser = {
-        ...storedUser,
-        name: name.trim(),
-        phone: phone.trim() || null,
-      };
-      localStorage.setItem('staysync_user', JSON.stringify(updatedUser));
+      // Update localStorage if exists
+      try {
+        const storedUser = JSON.parse(localStorage.getItem('staysync_user') || '{}');
+        if (storedUser) {
+          const updatedUser = {
+            ...storedUser,
+            name: name.trim(),
+            phone: phone.trim() || null,
+          };
+          localStorage.setItem('staysync_user', JSON.stringify(updatedUser));
+        }
+      } catch (storageError) {
+        console.warn("Could not update localStorage:", storageError);
+      }
 
       let message = "Your profile has been updated successfully";
       if (phoneChanged) {
@@ -273,20 +300,36 @@ const Profile = () => {
       return;
     }
 
+    setIsSendingOtp(true);
+
     try {
-      const { error } = await supabase.auth.signInWithOtp({
-        phone: phone.trim(),
+      // Call the edge function to send OTP
+      const response = await fetch(OTP_FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "send",
+          phone: phone.trim(),
+        }),
       });
 
-      if (error) {
-        console.error("Phone verification error:", error);
-        throw new Error(error.message);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Failed to send verification code");
+      }
+
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || "Failed to send verification code");
       }
 
       setPhoneVerificationSent(true);
       toast({
         title: "Verification code sent!",
-        description: "Check your phone for the verification code",
+        description: "Check your phone for the 4-digit verification code",
       });
 
     } catch (error) {
@@ -296,6 +339,8 @@ const Profile = () => {
         description: error.message || "Failed to send verification code. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsSendingOtp(false);
     }
   };
 
@@ -309,37 +354,50 @@ const Profile = () => {
       return;
     }
 
+    if (verificationCode.trim().length !== 4) {
+      toast({
+        title: "Invalid code",
+        description: "Please enter the 4-digit verification code",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsVerifyingPhone(true);
 
     try {
-      const { error } = await supabase.auth.verifyOtp({
-        phone: phone.trim(),
-        token: verificationCode.trim(),
-        type: 'sms'
+      // Call the edge function to verify OTP
+      const response = await fetch(OTP_FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          action: "verify",
+          phone: phone.trim(),
+          otp: verificationCode.trim(),
+        }),
       });
 
-      if (error) {
-        console.error("Phone verification error:", error);
-        throw new Error(error.message);
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(errorText || "Invalid verification code");
       }
 
-      // Update profile to mark phone as verified
-      const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ 
-          phone_verified: true,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', user.id);
-
-      if (updateError) {
-        console.error("Profile update error:", updateError);
-        throw new Error(updateError.message);
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || "Invalid verification code");
       }
 
+      // Update local state
       setPhoneVerified(true);
       setPhoneVerificationSent(false);
       setVerificationCode("");
+      setOriginalPhone(phone.trim());
+
+      // Reload profile data to get the updated phone_verified status
+      await loadUserData();
 
       toast({
         title: "Phone verified!",
@@ -383,13 +441,26 @@ const Profile = () => {
             </div>
           </div>
           <p className="text-lg font-medium mb-4" style={{ color: '#334443' }}>Failed to load profile data</p>
-          <Button 
-            onClick={() => window.location.reload()}
-            className="transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl"
-            style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
-          >
-            Try Again
-          </Button>
+          <div className="space-y-3">
+            <Button 
+              onClick={() => window.location.reload()}
+              className="transition-all duration-300 transform hover:-translate-y-0.5 shadow-lg hover:shadow-xl w-full"
+              style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
+            >
+              Try Again
+            </Button>
+            <Button 
+              onClick={async () => {
+                await supabase.auth.signOut();
+                window.location.href = "/login";
+              }}
+              variant="outline"
+              className="w-full"
+              style={{ borderColor: '#34656D', color: '#34656D' }}
+            >
+              Sign Out & Login Again
+            </Button>
+          </div>
         </div>
       </div>
     );
@@ -574,11 +645,17 @@ const Profile = () => {
                           type="button"
                           onClick={sendPhoneVerification}
                           variant="outline"
-                          disabled={phoneVerificationSent}
+                          disabled={phoneVerificationSent || isSendingOtp}
                           className="transition-colors duration-200"
                           style={{ borderColor: '#34656D', color: '#34656D' }}
                         >
-                          {phoneVerificationSent ? "Code Sent" : "Verify"}
+                          {isSendingOtp ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : phoneVerificationSent ? (
+                            "Code Sent"
+                          ) : (
+                            "Verify"
+                          )}
                         </Button>
                       )}
                     </div>
@@ -600,21 +677,22 @@ const Profile = () => {
                     {phoneVerificationSent && (
                       <div className="p-4 rounded-lg space-y-3 shadow-sm" style={{ backgroundColor: '#FAEAB1', borderColor: '#FAEAB1' }}>
                         <p className="text-sm" style={{ color: '#334443' }}>
-                          Enter the verification code sent to {phone}
+                          Enter the 4-digit verification code sent to {phone}
                         </p>
                         <div className="flex gap-2">
                           <Input
                             value={verificationCode}
                             onChange={(e) => setVerificationCode(e.target.value)}
-                            placeholder="Enter 6-digit code"
+                            placeholder="Enter 4-digit code"
                             className="flex-1 transition-colors duration-200"
                             style={{ borderColor: '#34656D' }}
-                            maxLength={6}
+                            maxLength={4}
+                            pattern="[0-9]{4}"
                           />
                           <Button
                             type="button"
                             onClick={verifyPhoneCode}
-                            disabled={isVerifyingPhone || !verificationCode}
+                            disabled={isVerifyingPhone || !verificationCode || verificationCode.length !== 4}
                             className="transition-colors duration-200"
                             style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
                           >
