@@ -765,7 +765,7 @@ const UserPortal = () => {
         )}
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="mt-8">
-          <TabsList className="grid grid-cols-2 md:grid-cols-6 gap-3 p-2 h-auto rounded-2xl" style={{ backgroundColor: '#FAEAB1' }}>
+          <TabsList className="grid grid-cols-2 md:grid-cols-5 gap-3 p-2 h-auto rounded-2xl" style={{ backgroundColor: '#FAEAB1' }}>
             <TabsTrigger 
               value="bookings" 
               className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
@@ -831,7 +831,7 @@ const UserPortal = () => {
               </div>
               <span className="font-medium">Feedback</span>
             </TabsTrigger>
-            <TabsTrigger 
+            {/* <TabsTrigger 
               value="floor-maps" 
               className="flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-300 data-[state=active]:shadow-lg"
               style={{ 
@@ -843,7 +843,7 @@ const UserPortal = () => {
                 <MapPin className="w-4 h-4" style={{ color: '#34656D' }} />
               </div>
               <span className="font-medium">Maps</span>
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
           <TabsContent value="bookings" className="space-y-6 mt-6">
@@ -1414,72 +1414,7 @@ const UserPortal = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="floor-maps" className="space-y-6 mt-6">
-            <Card className="border-0 shadow-xl overflow-hidden bg-white/90 backdrop-blur-sm">
-              <div className="h-2" style={{ backgroundColor: '#34656D' }}></div>
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center gap-3 text-2xl" style={{ color: '#334443' }}>
-                  <MapPin className="w-6 h-6" style={{ color: '#34656D' }} />
-                  Interactive Floor Maps
-                </CardTitle>
-                <CardDescription style={{ color: '#34656D' }}>
-                  Click on any available room to select it for booking
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center justify-between mb-6">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-1" style={{ color: '#334443' }}>Select a Floor</h3>
-                    <p style={{ color: '#34656D' }}>Rooms are color-coded by availability</p>
-                  </div>
-                  <Select value={selectedFloor.toString()} onValueChange={(v) => setSelectedFloor(Number(v))}>
-                    <SelectTrigger className="w-48 rounded-lg border-2" style={{ borderColor: '#FAEAB1' }}>
-                      <SelectValue placeholder="Select floor" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {floors.map(floor => (
-                        <SelectItem key={floor.number} value={floor.number.toString()}>
-                          {floor.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="border-2 rounded-2xl p-6" style={{ borderColor: '#FAEAB1', backgroundColor: '#FAF8F1' }}>
-                  <FloorMap 
-                    floorNumber={selectedFloor} 
-                    interactive={true}
-                    onRoomSelect={handleRoomSelect}
-                    selectedRoomId={selectedRoom?.id}
-                  />
-                </div>
-                
-                {selectedRoom && (
-                  <div className="mt-6 p-6 border-2 rounded-2xl transition-all duration-300" style={{ borderColor: '#34656D', backgroundColor: '#FAEAB1' }}>
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="font-bold text-lg mb-1" style={{ color: '#334443' }}>Selected: Room {selectedRoom.id}</p>
-                        <p className="text-sm" style={{ color: '#34656D' }}>
-                          {selectedRoom.room_type} - ₹{selectedRoom.price}/night
-                        </p>
-                      </div>
-                      <Button 
-                        onClick={() => {
-                          const bookingTab = document.querySelector('[value="bookings"]') as HTMLElement;
-                          bookingTab?.click();
-                        }}
-                        className="rounded-lg font-medium transition-all duration-300 transform hover:-translate-y-1 shadow-lg hover:shadow-xl"
-                        style={{ backgroundColor: '#34656D', color: '#FAF8F1' }}
-                      >
-                        Book This Room
-                      </Button>
-                    </div>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </TabsContent>
+          
         </Tabs>
       </div>
 
